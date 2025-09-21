@@ -1,0 +1,1253 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UX Анализ - Детальный отчет</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background: #ffffff;
+            color: #030213;
+            line-height: 1.6;
+        }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 16px; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            margin: 40px auto;
+        }
+        
+        .header { 
+            background: #030213; 
+            color: white; 
+            padding: 60px 40px; 
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0.3;
+        }
+        
+        .header h1 { 
+            margin: 0; 
+            font-size: 3.5em; 
+            font-weight: 800; 
+            letter-spacing: -0.02em;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p { 
+            margin: 20px 0 0 0; 
+            opacity: 0.95; 
+            font-size: 1.3em;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .content { 
+            padding: 60px 40px; 
+        }
+        
+        .section { 
+            margin-bottom: 50px; 
+        }
+        
+        .section h2 { 
+            font-size: 2.2em; 
+            font-weight: 700; 
+            color: #030213; 
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #030213;
+            position: relative;
+        }
+        
+        .section h2::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: #030213;
+            border-radius: 2px;
+        }
+        
+        .section h3 { 
+            font-size: 1.6em; 
+            font-weight: 600; 
+            color: #030213; 
+            margin: 30px 0 20px 0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: #f3f4f6;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(139, 92, 246, 0.1);
+            border-color: #030213;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #030213;
+        }
+        
+        .stat-number {
+            font-size: 3em;
+            font-weight: 800;
+            color: #030213;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 1.1em;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .pain-points {
+            display: grid;
+            gap: 24px;
+        }
+        
+        .pain-point-card {
+            background: #fef3f2;
+            border: 2px solid #fecaca;
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .pain-point-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: #ef4444;
+        }
+        
+        .pain-point-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .pain-point-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #dc2626;
+            margin: 0;
+        }
+        
+        .severity-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .severity-critical {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .severity-high {
+            background: #fef3f2;
+            color: #ea580c;
+            border: 1px solid #fed7aa;
+        }
+        
+        .severity-medium {
+            background: #fefce8;
+            color: #ca8a04;
+            border: 1px solid #fef08a;
+        }
+        
+        .pain-point-content {
+            margin-bottom: 20px;
+            color: #030213;
+            line-height: 1.7;
+        }
+        
+        .pain-point-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-item {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .detail-value {
+            color: #030213;
+            font-weight: 500;
+        }
+        
+        .root-cause {
+            background: #f0fdf4;
+            border: 2px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .root-cause-label {
+            font-weight: 600;
+            color: #059669;
+            margin-bottom: 8px;
+        }
+        
+        .root-cause-text {
+            color: #065f46;
+            line-height: 1.6;
+        }
+        
+        .user-needs {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .need-card {
+            background: #f0f9ff;
+            border: 2px solid #bae6fd;
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .need-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: #0ea5e9;
+        }
+        
+        .need-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        
+        .need-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #0c4a6e;
+            margin: 0;
+        }
+        
+        .priority-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .priority-high {
+            background: #fef3f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .priority-medium {
+            background: #fefce8;
+            color: #ca8a04;
+            border: 1px solid #fef08a;
+        }
+        
+        .priority-low {
+            background: #f0fdf4;
+            color: #059669;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .recommendations {
+            background: #faf5ff;
+            border: 2px solid #e9d5ff;
+            border-radius: 16px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        
+        .recommendations h3 {
+            color: #7c3aed;
+            margin-bottom: 20px;
+        }
+        
+        .recommendation-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .recommendation-item {
+            background: white;
+            margin-bottom: 16px;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #030213;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .recommendation-text {
+            color: #030213;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .recommendation-priority {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #030213;
+            color: white;
+            border-radius: 6px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .metrics-section {
+            background: #f0fdf4;
+            border: 2px solid #bbf7d0;
+            border-radius: 16px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #d1fae5;
+        }
+        
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: 800;
+            color: #717182;
+            margin-bottom: 8px;
+        }
+        
+        .metric-label {
+            color: #065f46;
+            font-weight: 500;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #030213;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .footer {
+            background: #030213;
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .footer h3 {
+            color: #030213;
+            margin-bottom: 20px;
+        }
+        
+        .footer p {
+            opacity: 0.8;
+            margin-bottom: 16px;
+        }
+        
+        .footer-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .footer-stat {
+            text-align: center;
+        }
+        
+        .footer-stat-number {
+            font-size: 2em;
+            font-weight: 700;
+            color: #717182;
+            margin-bottom: 8px;
+        }
+        
+        .footer-stat-label {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+        
+        .brief-answers {
+            display: grid;
+            gap: 24px;
+        }
+        
+        .brief-answer-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .brief-answer-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: #3b82f6;
+        }
+        
+        .brief-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        
+        .brief-question h3 {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+            flex: 1;
+            margin-right: 16px;
+        }
+        
+        .confidence-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        
+        .confidence-badge.high {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .confidence-badge.medium {
+            background: #fefce8;
+            color: #a16207;
+            border: 1px solid #fef08a;
+        }
+        
+        .confidence-badge.low {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .confidence-badge.no-data {
+            background: #f3f4f6;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+        }
+        
+        .brief-answer {
+            color: #374151;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+        
+        .brief-evidence {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+        }
+        
+        .brief-evidence h4 {
+            color: #1f2937;
+            margin-bottom: 12px;
+            font-size: 1em;
+            font-weight: 600;
+        }
+        
+        .brief-evidence ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .brief-evidence li {
+            color: #4b5563;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                border-radius: 12px;
+            }
+            
+            .header {
+                padding: 40px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .content {
+                padding: 40px 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pain-point-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .brief-question {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .brief-question h3 {
+                margin-right: 0;
+                margin-bottom: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>UX Анализ</h1>
+            <p>Детальный отчет по исследованию пользовательского опыта</p>
+        </div>
+        
+        <div class="content">
+            
+            <div class="section">
+                <h2>Обзор исследования</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">1</div>
+                        <div class="stat-label">Интервью проанализировано</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">3</div>
+                        <div class="stat-label">Проблем выявлено</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">2</div>
+                        <div class="stat-label">Потребностей определено</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">2</div>
+                        <div class="stat-label">Значимых цитат</div>
+                    </div>
+                </div>
+                
+                <div style="background: #f8fafc; padding: 24px; border-radius: 12px; margin: 24px 0;">
+                    <h3 style="margin-bottom: 16px; color: #030213;">Резюме анализа</h3>
+                    <p style="font-size: 1.1em; line-height: 1.8; color: #030213; margin-bottom: 16px;">
+                        Анализ 1 интервью выявил 3 основных проблем и 2 потребностей пользователей.
+                    </p>
+                    
+                    <h4 style="margin-bottom: 8px; color: #030213;">Методология</h4>
+                    <p style="color: #64748b; font-size: 0.95em;">Глубокий качественный анализ с использованием AI-анализа транскриптов, кросс-анализа паттернов и поведенческой сегментации.</p>
+                    
+                </div>
+                
+                
+                <div style="margin-top: 24px;">
+                    <h3 style="margin-bottom: 16px; color: #030213;">Ключевые находки</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        
+                        <li style="display: flex; align-items: flex-start; margin-bottom: 12px; padding: 16px; background: #f1f5f9; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                            <span style="background: #3b82f6; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin-right: 12px; flex-shrink: 0;">1</span>
+                            <span style="color: #030213;">Современные банковские клиенты демонстрируют высокую чувствительность к качеству цифровых сервисов и скорости решения проблем, при этом готовы мириться с отдельными недостатками ради выгодных условий обслуживания. Они активно используют несколько банков одновременно, распределяя финансовые задачи между ними в зависимости от преимуществ каждого. Ключевым фактором удержания становится комбинация удобного мобильного приложения и выгодных тарифов, а не традиционные офлайн-сервисы.</span>
+                        </li>
+                        
+                    </ul>
+                </div>
+                
+            </div>
+            
+            
+            
+            <div class="section">
+                <h2>Детальные ключевые находки</h2>
+                <div class="key-findings">
+                    
+                        <div class="finding-item">
+                            <div class="finding-number">1</div>
+                            <div class="finding-text">Современные банковские клиенты демонстрируют высокую чувствительность к качеству цифровых сервисов и скорости решения проблем, при этом готовы мириться с отдельными недостатками ради выгодных условий обслуживания. Они активно используют несколько банков одновременно, распределяя финансовые задачи между ними в зависимости от преимуществ каждого. Ключевым фактором удержания становится комбинация удобного мобильного приложения и выгодных тарифов, а не традиционные офлайн-сервисы.</div>
+                        </div>
+                    
+                </div>
+                
+                
+                <div style="margin-top: 32px;">
+                    <h3 style="margin-bottom: 20px; color: #030213;">Детальные инсайты</h3>
+                    <div class="insights-grid" style="display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                        
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border-left: 4px solid #10b981;">
+                            <h4 style="margin-bottom: 12px; color: #030213;">Инсайт 1</h4>
+                            <p style="color: #64748b; margin-bottom: 12px;">[object Object]</p>
+                            <p style="color: #059669; font-size: 0.9em;"><strong>Доказательства:</strong> Наличие счетов в нескольких банках,Приоритет цифровых каналов,Готовность к компромиссам при наличии существенных выгод</p>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </div>
+            
+            
+            
+            
+            <div class="section">
+                <h2>Ключевые проблемы пользователей</h2>
+                <div class="pain-points">
+                    
+                        <div class="pain-point-card">
+                            <div class="pain-point-header">
+                                <h3 class="pain-point-title">Навязчивая реклама кредитных продуктов и инвестиций, не соответствующая финансовым возможностям студента</h3>
+                                <span class="severity-badge severity-high">
+                                    Высоко
+                                </span>
+                            </div>
+                            
+                            
+                            
+                            <div class="pain-point-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">Затронуто пользователей</div>
+                                    <div class="detail-value">100%</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Частота упоминаний</div>
+                                    <div class="detail-value">постоянно раз</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Влияние на пользователя</div>
+                                    <div class="detail-value">Вызывает раздражение и снижает лояльность</div>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <div class="detail-label">Сегменты</div>
+                                    <div class="detail-value">студенты, молодежь</div>
+                                </div>
+                                
+                                
+                            </div>
+                            
+                            
+                            
+                            
+                            <div style="margin-top: 16px;">
+                                <h4 style="margin-bottom: 8px; color: #030213; font-size: 0.9em;">Цитаты пользователей:</h4>
+                                <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 3px solid #64748b;">
+                                    
+                                    <p style="margin: 0 0 8px 0; color: #64748b; font-style: italic; font-size: 0.9em;">"Блин, я студентка, какие инвестиции? У меня там стипендия 20 тысяч лежит!"</p>
+                                    
+                                </div>
+                            </div>
+                            
+                        </div>
+                    
+                        <div class="pain-point-card">
+                            <div class="pain-point-header">
+                                <h3 class="pain-point-title">Негативное восприятие ребрендинга банка</h3>
+                                <span class="severity-badge severity-medium">
+                                    Средне
+                                </span>
+                            </div>
+                            
+                            
+                            
+                            <div class="pain-point-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">Затронуто пользователей</div>
+                                    <div class="detail-value">100%</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Частота упоминаний</div>
+                                    <div class="detail-value">постоянно раз</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Влияние на пользователя</div>
+                                    <div class="detail-value">Снижение доверия к бренду</div>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <div class="detail-label">Сегменты</div>
+                                    <div class="detail-value">все пользователи</div>
+                                </div>
+                                
+                                
+                            </div>
+                            
+                            
+                            
+                            
+                            <div style="margin-top: 16px;">
+                                <h4 style="margin-bottom: 8px; color: #030213; font-size: 0.9em;">Цитаты пользователей:</h4>
+                                <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 3px solid #64748b;">
+                                    
+                                    <p style="margin: 0 0 8px 0; color: #64748b; font-style: italic; font-size: 0.9em;">"ТБанк - как будто китайская подделка"</p>
+                                    
+                                </div>
+                            </div>
+                            
+                        </div>
+                    
+                        <div class="pain-point-card">
+                            <div class="pain-point-header">
+                                <h3 class="pain-point-title">Устаревшие процессы обслуживания в традиционных банках</h3>
+                                <span class="severity-badge severity-high">
+                                    Высоко
+                                </span>
+                            </div>
+                            
+                            
+                            
+                            <div class="pain-point-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">Затронуто пользователей</div>
+                                    <div class="detail-value">100%</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Частота упоминаний</div>
+                                    <div class="detail-value">при каждом посещении отделения раз</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Влияние на пользователя</div>
+                                    <div class="detail-value">Потеря времени и негативные эмоции</div>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <div class="detail-label">Сегменты</div>
+                                    <div class="detail-value">молодежь</div>
+                                </div>
+                                
+                                
+                            </div>
+                            
+                            
+                            
+                            
+                            <div style="margin-top: 16px;">
+                                <h4 style="margin-bottom: 8px; color: #030213; font-size: 0.9em;">Цитаты пользователей:</h4>
+                                <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 3px solid #64748b;">
+                                    
+                                    <p style="margin: 0 0 8px 0; color: #64748b; font-style: italic; font-size: 0.9em;">"Как будто в 90-е вернулась"</p>
+                                    
+                                    <p style="margin: 0 0 8px 0; color: #64748b; font-style: italic; font-size: 0.9em;">"После Тинька как будто в прошлое попала"</p>
+                                    
+                                </div>
+                            </div>
+                            
+                        </div>
+                    
+                </div>
+            </div>
+            
+            
+            
+            <div class="section">
+                <h2>Потребности пользователей</h2>
+                <div class="user-needs">
+                    
+                        <div class="need-card">
+                            <div class="need-header">
+                                <h3 class="need-title">Удобное мобильное приложение с современным интерфейсом</h3>
+                                <span class="priority-badge priority-high">
+                                    Приоритет: Высокий
+                                </span>
+                            </div>
+                            
+                            
+                            
+                            <div class="pain-point-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">Частота упоминаний</div>
+                                    <div class="detail-value">ежедневно раз</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Сегменты пользователей</div>
+                                    <div class="detail-value">молодежь, студенты</div>
+                                </div>
+                                
+                                
+                            </div>
+                            
+                            
+                            <div style="margin-top: 16px;">
+                                <h4 style="margin-bottom: 8px; color: #030213; font-size: 0.9em;">Цитаты пользователей:</h4>
+                                <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 3px solid #64748b;">
+                                    
+                                    <p style="margin: 0 0 8px 0; color: #64748b; font-style: italic; font-size: 0.9em;">"Захожу туда просто так, потому что красиво и удобно"</p>
+                                    
+                                </div>
+                            </div>
+                            
+                        </div>
+                    
+                        <div class="need-card">
+                            <div class="need-header">
+                                <h3 class="need-title">Значительный кэшбэк для экономии</h3>
+                                <span class="priority-badge priority-high">
+                                    Приоритет: Высокий
+                                </span>
+                            </div>
+                            
+                            
+                            
+                            <div class="pain-point-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">Частота упоминаний</div>
+                                    <div class="detail-value">постоянно раз</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Сегменты пользователей</div>
+                                    <div class="detail-value">студенты</div>
+                                </div>
+                                
+                                
+                            </div>
+                            
+                            
+                            <div style="margin-top: 16px;">
+                                <h4 style="margin-bottom: 8px; color: #030213; font-size: 0.9em;">Цитаты пользователей:</h4>
+                                <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 3px solid #64748b;">
+                                    
+                                    <p style="margin: 0 0 8px 0; color: #64748b; font-style: italic; font-size: 0.9em;">"За месяц накапливается 2-3 тысячи кэшбэка - для студента это прям подарок"</p>
+                                    
+                                    <p style="margin: 0 0 8px 0; color: #64748b; font-style: italic; font-size: 0.9em;">"Бесплатная полностью, кэшбэк до 30% в категориях!"</p>
+                                    
+                                </div>
+                            </div>
+                            
+                        </div>
+                    
+                </div>
+            </div>
+            
+            
+            
+            
+            <div class="section">
+                <h2>Рекомендации</h2>
+                <div class="recommendations">
+                    
+                        <h3>Немедленные действия</h3>
+                        <ul class="recommendation-list">
+                            
+                                <li class="recommendation-item">
+                                    <div class="recommendation-text">Внедрить систему быстрого реагирования на обращения клиентов</div>
+                                    <span class="recommendation-priority">Немедленно</span>
+                                </li>
+                            
+                                <li class="recommendation-item">
+                                    <div class="recommendation-text">Оптимизировать процесс восстановления доступа к онлайн-банкингу</div>
+                                    <span class="recommendation-priority">Немедленно</span>
+                                </li>
+                            
+                                <li class="recommendation-item">
+                                    <div class="recommendation-text">Запустить программу обучения поддержки первой линии</div>
+                                    <span class="recommendation-priority">Немедленно</span>
+                                </li>
+                            
+                        </ul>
+                    
+                    
+                    
+                        <h3>Краткосрочные (1-3 месяца)</h3>
+                        <ul class="recommendation-list">
+                            
+                                <li class="recommendation-item">
+                                    <div class="recommendation-text">Разработать омниканальную систему коммуникации</div>
+                                    <span class="recommendation-priority">1-3 месяца</span>
+                                </li>
+                            
+                                <li class="recommendation-item">
+                                    <div class="recommendation-text">Создать персонализированные продуктовые предложения</div>
+                                    <span class="recommendation-priority">1-3 месяца</span>
+                                </li>
+                            
+                                <li class="recommendation-item">
+                                    <div class="recommendation-text">Улучшить UX мобильного приложения</div>
+                                    <span class="recommendation-priority">1-3 месяца</span>
+                                </li>
+                            
+                        </ul>
+                    
+                    
+                    
+                        <h3>Долгосрочные (3+ месяца)</h3>
+                        <ul class="recommendation-list">
+                            
+                                <li class="recommendation-item">
+                                    <div class="recommendation-text">Внедрить предиктивную аналитику для предупреждения проблем</div>
+                                    <span class="recommendation-priority">3+ месяца</span>
+                                </li>
+                            
+                                <li class="recommendation-item">
+                                    <div class="recommendation-text">Создать экосистему финансовых продуктов</div>
+                                    <span class="recommendation-priority">3+ месяца</span>
+                                </li>
+                            
+                                <li class="recommendation-item">
+                                    <div class="recommendation-text">Развернуть программу долгосрочной лояльности</div>
+                                    <span class="recommendation-priority">3+ месяца</span>
+                                </li>
+                            
+                        </ul>
+                    
+                </div>
+            </div>
+            
+            
+            
+            <div class="section">
+                <h2>Персоны пользователей</h2>
+                <div class="personas-grid" style="display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));">
+                    
+                    <div class="persona-card" style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 24px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                            <div style="width: 60px; height: 60px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 16px;">
+                                <span style="color: white; font-weight: bold; font-size: 24px;">П</span>
+                            </div>
+                            <div>
+                                <h3 style="margin: 0; color: #030213; font-size: 1.3em;">Продвинутая студентка-фрилансер</h3>
+                                <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.9em;">Основная персона</p>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <h4 style="margin-bottom: 8px; color: #030213;">Описание</h4>
+                            <p style="color: #64748b; margin: 0; line-height: 1.6;">Студентка 4 курса МГУ, 21 год, работающая SMM-менеджером на фрилансе. Технически грамотная, активно использует 3 банка для разных целей. Живет в общежитии, увлекается путешествиями и фотографией.</p>
+                        </div>
+                        
+                        
+                        <div style="margin-bottom: 16px;">
+                            <h4 style="margin-bottom: 8px; color: #030213;">Цели</h4>
+                            <ul style="margin: 0; padding-left: 20px; color: #64748b;">
+                                <li style="margin-bottom: 4px;">Максимизировать выгоду от кэшбэка</li><li style="margin-bottom: 4px;">Эффективно управлять финансами через мобильные приложения</li><li style="margin-bottom: 4px;">Накопить на путешествия</li><li style="margin-bottom: 4px;">Вести учет расходов</li><li style="margin-bottom: 4px;">Избежать лишних комиссий</li>
+                            </ul>
+                        </div>
+                        
+                        
+                        
+                        <div style="margin-bottom: 16px;">
+                            <h4 style="margin-bottom: 8px; color: #030213;">Фрустрации</h4>
+                            <ul style="margin: 0; padding-left: 20px; color: #64748b;">
+                                <li style="margin-bottom: 4px;">Высокие комиссии за снятие наличных (2% сверх лимита)</li><li style="margin-bottom: 4px;">Ограниченная сеть банкоматов</li><li style="margin-bottom: 4px;">Навязчивая реклама кредитных продуктов</li><li style="margin-bottom: 4px;">Устаревший дизайн некоторых банковских приложений</li><li style="margin-bottom: 4px;">Необходимость посещать отделения для получения справок</li>
+                            </ul>
+                        </div>
+                        
+                        
+                        
+                        <div>
+                            <h4 style="margin-bottom: 8px; color: #030213;">Мотивации</h4>
+                            <ul style="margin: 0; padding-left: 20px; color: #64748b;">
+                                <li style="margin-bottom: 4px;">Экономия на кэшбэке</li><li style="margin-bottom: 4px;">Стремление к финансовой независимости</li><li style="margin-bottom: 4px;">Желание пользоваться современными технологиями</li><li style="margin-bottom: 4px;">Накопление на путешествия</li>
+                            </ul>
+                        </div>
+                        
+                    </div>
+                    
+                    
+                    
+                    <div class="persona-card" style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 24px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                            <div style="width: 60px; height: 60px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 16px;">
+                                <span style="color: white; font-weight: bold; font-size: 24px;">Н</span>
+                            </div>
+                            <div>
+                                <h3 style="margin: 0; color: #030213; font-size: 1.3em;">Недостаточно данных</h3>
+                                <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.9em;">Вторичная персона</p>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <h4 style="margin-bottom: 8px; color: #030213;">Описание</h4>
+                            <p style="color: #64748b; margin: 0; line-height: 1.6;">В предоставленных данных присутствует информация только об одном пользователе</p>
+                        </div>
+                        
+                        
+                        
+                        
+                        
+                        
+                    </div>
+                    
+                </div>
+            </div>
+            
+            
+            
+            <div class="section">
+                <h2>Значимые цитаты пользователей</h2>
+                <div class="quotes-grid" style="display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">
+                    
+                    <div class="quote-card" style="background: #f8fafc; padding: 20px; border-radius: 12px; border-left: 4px solid #3b82f6; position: relative;">
+                        <div style="position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <span style="color: white; font-weight: bold; font-size: 14px;">1</span>
+                        </div>
+                        <blockquote style="margin: 0; color: #030213; font-style: italic; line-height: 1.6; font-size: 1.05em;">
+                            "Сбер был, но я его закрыла - отстой полный для молодежи. В Тиньке живу - там все мои финансы. Захожу туда просто так, потому что красиво и удобно. За месяц накапливается 2-3 тысячи кэшбэка - для студента это прям подарок. Бесплатная полностью, кэшбэк до 30% в категориях! После Тинька как будто в прошлое попала, когда другие банки пробую."
+                        </blockquote>
+                    </div>
+                    
+                    <div class="quote-card" style="background: #f8fafc; padding: 20px; border-radius: 12px; border-left: 4px solid #3b82f6; position: relative;">
+                        <div style="position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <span style="color: white; font-weight: bold; font-size: 14px;">2</span>
+                        </div>
+                        <blockquote style="margin: 0; color: #030213; font-style: italic; line-height: 1.6; font-size: 1.05em;">
+                            "Приложение - это треш. Дизайн как будто студент-первокурсник делал в 2010 году. Блин, я студентка, какие инвестиции? У меня там стипендия 20 тысяч лежит! Как будто в 90-е вернулась. После Тинька как будто в прошлое попала. Это банк для взрослых дядь и теть."
+                        </blockquote>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            
+            
+            <div class="section">
+                <h2>Ответы на вопросы брифа</h2>
+                <div class="brief-answers">
+                    
+                        <div class="brief-answer-card">
+                            <div class="brief-question">
+                                <h3>Какие факторы влияют на выбор основного банка?</h3>
+                                <div class="confidence-badge medium">
+                                    Средняя уверенность
+                                </div>
+                            </div>
+                            <div class="brief-answer">
+                                На основе данных интервью, ключевыми факторами являются: 1) Современное удобное мобильное приложение с хорошим дизайном, 2) Привлекательная программа кэшбэка, 3) Бесплатное обслуживание
+                            </div>
+                            
+                                <div class="brief-evidence">
+                                    <h4>Доказательства:</h4>
+                                    <ul>
+                                        <li>Захожу туда просто так, потому что красиво и удобно</li><li>Бесплатная полностью, кэшбэк до 30% в категориях!</li>
+                                    </ul>
+                                </div>
+                            
+                        </div>
+                    
+                        <div class="brief-answer-card">
+                            <div class="brief-question">
+                                <h3>Какие проблемы чаще всего возникают при использовании банковских услуг?</h3>
+                                <div class="confidence-badge high">
+                                    Высокая уверенность
+                                </div>
+                            </div>
+                            <div class="brief-answer">
+                                Основные выявленные проблемы: 1) Навязчивая нерелевантная реклама банковских продуктов, 2) Устаревший интерфейс и процессы в традиционных банках, 3) Неудачный ребрендинг
+                            </div>
+                            
+                                <div class="brief-evidence">
+                                    <h4>Доказательства:</h4>
+                                    <ul>
+                                        <li>Блин, я студентка, какие инвестиции? У меня там стипендия 20 тысяч лежит!</li><li>Как будто в 90-е вернулась</li><li>ТБанк - как будто китайская подделка</li>
+                                    </ul>
+                                </div>
+                            
+                        </div>
+                    
+                        <div class="brief-answer-card">
+                            <div class="brief-question">
+                                <h3>Что мотивирует клиентов оставаться в банке несмотря на проблемы?</h3>
+                                <div class="confidence-badge medium">
+                                    Средняя уверенность
+                                </div>
+                            </div>
+                            <div class="brief-answer">
+                                По данным интервью, основные факторы удержания: высокий кэшбэк и удобное современное приложение
+                            </div>
+                            
+                                <div class="brief-evidence">
+                                    <h4>Доказательства:</h4>
+                                    <ul>
+                                        <li>За месяц накапливается 2-3 тысячи кэшбэка - для студента это прям подарок</li><li>Захожу туда просто так, потому что красиво и удобно</li>
+                                    </ul>
+                                </div>
+                            
+                        </div>
+                    
+                        <div class="brief-answer-card">
+                            <div class="brief-question">
+                                <h3>Как клиенты решают возникающие проблемы с банком?</h3>
+                                <div class="confidence-badge no-data">
+                                    Нет данных
+                                </div>
+                            </div>
+                            <div class="brief-answer">
+                                Недостаточно данных для полного ответа
+                            </div>
+                            
+                        </div>
+                    
+                        <div class="brief-answer-card">
+                            <div class="brief-question">
+                                <h3>Какие каналы коммуникации предпочитают разные группы клиентов?</h3>
+                                <div class="confidence-badge low">
+                                    Низкая уверенность
+                                </div>
+                            </div>
+                            <div class="brief-answer">
+                                По имеющимся данным, молодежная аудитория предпочитает мобильное приложение как основной канал взаимодействия с банком
+                            </div>
+                            
+                                <div class="brief-evidence">
+                                    <h4>Доказательства:</h4>
+                                    <ul>
+                                        <li>В Тиньке живу - там все мои финансы</li><li>Захожу туда просто так, потому что красиво и удобно</li>
+                                    </ul>
+                                </div>
+                            
+                        </div>
+                    
+                        <div class="brief-answer-card">
+                            <div class="brief-question">
+                                <h3>Что клиенты ценят больше всего в банковском обслуживании?</h3>
+                                <div class="confidence-badge medium">
+                                    Средняя уверенность
+                                </div>
+                            </div>
+                            <div class="brief-answer">
+                                На основе интервью, клиенты больше всего ценят: 1) Современный цифровой опыт, 2) Финансовые выгоды (кэшбэк), 3) Бесплатное обслуживание
+                            </div>
+                            
+                                <div class="brief-evidence">
+                                    <h4>Доказательства:</h4>
+                                    <ul>
+                                        <li>Захожу туда просто так, потому что красиво и удобно</li><li>За месяц накапливается 2-3 тысячи кэшбэка</li><li>Бесплатная полностью</li>
+                                    </ul>
+                                </div>
+                            
+                        </div>
+                    
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="footer">
+            <h3>Итоги исследования</h3>
+            <p>На основе анализа 0 интервью были выявлены ключевые проблемы и возможности для улучшения пользовательского опыта.</p>
+            
+            <div class="footer-stats">
+                <div class="footer-stat">
+                    <div class="footer-stat-number">3</div>
+                    <div class="footer-stat-label">Проблем</div>
+                </div>
+                <div class="footer-stat">
+                    <div class="footer-stat-number">2</div>
+                    <div class="footer-stat-label">Потребностей</div>
+                </div>
+                <div class="footer-stat">
+                    <div class="footer-stat-number">Требует количественных данных%</div>
+                    <div class="footer-stat-label">Удовлетворенность</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

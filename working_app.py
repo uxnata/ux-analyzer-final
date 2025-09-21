@@ -1401,7 +1401,7 @@ with col3_2:
             # Кнопка для скачивания HTML
             st.download_button(
                 label="📥 Скачать HTML отчет",
-                data=html_report,
+                data=html_report.encode('utf-8'),
                 file_name=f"ux_report_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
                 mime="text/html",
                 use_container_width=True

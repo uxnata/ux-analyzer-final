@@ -1233,49 +1233,13 @@ with col1:
                 """, unsafe_allow_html=True)
 
 with col2:
-    # Боковая панель
-    st.markdown("""
-    <div class="sidebar-content">
-        <h3>🔧 Управление</h3>
-        <p>Используйте кнопку ниже для очистки всех данных и начала заново.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
+    # Пустая боковая панель
+    st.markdown("")
+
+# Кнопка очистки внизу
+st.markdown("---")
+col_clear_1, col_clear_2, col_clear_3 = st.columns([1, 1, 1])
+
+with col_clear_2:
     if st.button("🗑️ Очистить все", type="secondary", use_container_width=True):
         st.rerun()
-    
-    # Статус
-    st.markdown("""
-    <div class="sidebar-content">
-        <h3>📊 Статус</h3>
-        <div style="margin: 1rem 0;">
-            <div class="status-badge status-success">Файлы: {}</div>
-            <div class="status-badge status-success">Бриф: {}</div>
-            <div class="status-badge status-success">API: {}</div>
-        </div>
-    </div>
-    """.format(
-        len(uploaded_files) if 'uploaded_files' in locals() and uploaded_files else 0,
-        '✅' if 'uploaded_brief' in locals() and uploaded_brief else '❌',
-        '✅' if 'api_key' in locals() and api_key else '❌'
-    ), unsafe_allow_html=True)
-
-# Подвал с информацией
-st.markdown("---")
-st.markdown("""
-<div class="info-card">
-    <h3>ℹ️ О системе</h3>
-    <p><strong>UX Анализатор V24.0</strong> - Профессиональный инструмент для анализа пользовательских интервью</p>
-    
-    <h4>Возможности:</h4>
-    <ul>
-        <li>🔍 Детальный анализ транскриптов интервью</li>
-        <li>📊 Генерация инсайтов и рекомендаций с цитатами</li>
-        <li>📋 Создание профессиональных отчетов</li>
-        <li>🎯 Поддержка брифа исследования</li>
-        <li>📈 Трассировка выводов к исходным данным</li>
-    </ul>
-    
-    <p><strong>Технологии:</strong> Claude 3.5 Sonnet, Streamlit, OpenRouter API</p>
-</div>
-""", unsafe_allow_html=True)

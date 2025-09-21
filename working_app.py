@@ -1920,7 +1920,7 @@ st.markdown("""
 st.markdown("""
 <div class="main-header">
     <h1>🔬 UX Анализатор V24.0</h1>
-    <p>Профессиональный анализ транскриптов пользовательских интервью с использованием Claude 3.5 Sonnet</p>
+    <p>Профессиональный анализ транскриптов пользовательских интервью</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -2033,7 +2033,7 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
             transcripts.append(content)
         
         # Реальный анализ через новые классы
-        status_text.text("🤖 Анализ через Claude 3.5 Sonnet...")
+        status_text.text("🤖 Анализ данных...")
         progress_bar.progress(40)
         
         try:
@@ -2101,7 +2101,7 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
         # Выбор блоков для включения в отчет
         st.markdown("### Выберите разделы для включения в отчет:")
         
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         
         with col1:
             include_overview = st.checkbox("📊 Общий обзор", value=True)
@@ -2109,13 +2109,15 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
             include_brief_answers = st.checkbox("❓ Ответы на вопросы брифа", value=True)
             include_analysis = st.checkbox("🔍 Анализ результатов", value=True)
             include_personas = st.checkbox("👥 Персоны пользователей", value=True)
-            include_insights = st.checkbox("💡 Ключевые инсайты", value=True)
             
         with col2:
+            include_insights = st.checkbox("💡 Ключевые инсайты", value=True)
             include_pain_points = st.checkbox("⚠️ Болевые точки", value=True)
             include_user_needs = st.checkbox("🎯 Потребности пользователей", value=True)
             include_behavioral = st.checkbox("🔄 Поведенческие паттерны", value=True)
             include_emotional = st.checkbox("😊 Эмоциональное путешествие", value=True)
+            
+        with col3:
             include_contradictions = st.checkbox("⚖️ Противоречия", value=True)
             include_quotes = st.checkbox("💬 Значимые цитаты", value=True)
             include_recommendations = st.checkbox("🎯 Рекомендации", value=True)
@@ -2209,7 +2211,7 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
         st.markdown("""
         <div class="info-card">
             <h3>🎯 Результат анализа</h3>
-            <p>• Анализ выполнен через Claude 3.5 Sonnet</p>
+            <p>• Анализ выполнен успешно</p>
             <p>• Сгенерирован детальный HTML отчет</p>
             <p>• Ответы основаны на реальных транскриптах интервью</p>
             <p>• Цитаты взяты из интервью</p>

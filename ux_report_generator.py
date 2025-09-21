@@ -27,16 +27,22 @@ class EnhancedReportGenerator:
 
     def generate_html(self, analysis_data: Dict) -> str:
         """Генерация полного HTML отчета"""
+        print(f"🔍 Analysis data keys: {list(analysis_data.keys())}")
         findings = analysis_data.get('findings', {})
         personas = analysis_data.get('personas', [])
         recommendations = analysis_data.get('recommendations', {})
         brief_answers = analysis_data.get('brief_answers', {})
         current_metrics = analysis_data.get('current_metrics', {})
+        interview_summaries = analysis_data.get('interview_summaries', [])
+        
+        print(f"🔍 Findings type: {type(findings)}")
+        print(f"🔍 Personas count: {len(personas)}")
+        print(f"🔍 Interview summaries count: {len(interview_summaries)}")
         
         # Если findings - это объект ResearchFindings, извлекаем данные
         if hasattr(findings, 'key_insights'):
             findings_data = {
-                'executive_summary': getattr(findings, 'executive_summary', ''),
+                'executive_summary': getattr(findings, 'executive_summary', 'Анализ пользовательских интервью выявил ключевые проблемы и возможности для улучшения продукта.'),
                 'key_insights': getattr(findings, 'key_insights', []),
                 'behavioral_patterns': getattr(findings, 'behavioral_patterns', []),
                 'user_segments': getattr(findings, 'user_segments', []),
@@ -50,7 +56,20 @@ class EnhancedReportGenerator:
                 'goal_achievement': getattr(findings, 'goal_achievement', {})
             }
         else:
-            findings_data = findings
+            findings_data = findings if findings else {
+                'executive_summary': 'Анализ пользовательских интервью выявил ключевые проблемы и возможности для улучшения продукта.',
+                'key_insights': [],
+                'behavioral_patterns': [],
+                'user_segments': [],
+                'pain_points_map': {},
+                'opportunities': [],
+                'recommendations': [],
+                'risks': [],
+                'personas': [],
+                'current_metrics': {},
+                'brief_answers': {},
+                'goal_achievement': {}
+            }
         
         html_content = f"""
 <!DOCTYPE html>
@@ -66,19 +85,19 @@ class EnhancedReportGenerator:
 <body>
     {self._generate_header()}
     {self._generate_table_of_contents()}
-            {self._generate_executive_summary(findings_data)}
-            {self._generate_brief_section(analysis_data.get('brief_data', {}))}
-            {self._generate_brief_answers(brief_answers)}
-            {self._generate_personas_section(personas)}
-            {self._generate_insights_section(findings_data.get('key_insights', []))}
-            {self._generate_pain_points_section(findings_data.get('key_insights', []))}
-            {self._generate_user_needs_section(findings_data)}
-            {self._generate_behavioral_patterns_section(findings_data.get('behavioral_patterns', []))}
-            {self._generate_emotional_journey_section(analysis_data.get('interview_summaries', []))}
-            {self._generate_contradictions_section(analysis_data.get('interview_summaries', []))}
-            {self._generate_quotes_section(analysis_data.get('interview_summaries', []))}
-            {self._generate_recommendations_section(recommendations)}
-            {self._generate_appendix_section(analysis_data)}
+                   {self._generate_executive_summary(findings_data)}
+                   {self._generate_brief_section(analysis_data.get('brief_data', {}))}
+                   {self._generate_brief_answers(brief_answers)}
+                   {self._generate_personas_section(personas)}
+                   {self._generate_insights_section(findings_data.get('key_insights', []))}
+                   {self._generate_pain_points_section(findings_data.get('key_insights', []))}
+                   {self._generate_user_needs_section(findings_data)}
+                   {self._generate_behavioral_patterns_section(findings_data.get('behavioral_patterns', []))}
+                   {self._generate_emotional_journey_section(interview_summaries)}
+                   {self._generate_contradictions_section(interview_summaries)}
+                   {self._generate_quotes_section(interview_summaries)}
+                   {self._generate_recommendations_section(recommendations)}
+                   {self._generate_appendix_section(analysis_data)}
     {self._generate_footer()}
 </body>
 </html>
@@ -482,9 +501,15 @@ class EnhancedReportGenerator:
         </div>
         """
 
-    def _generate_executive_summary(self, findings) -> str:
+    def _generate_executive_summary(self, findings_data) -> str:
         """Генерация резюме"""
-        summary = getattr(findings, 'executive_summary', 'Анализ пользовательских интервью выявил ключевые проблемы и возможности для улучшения продукта.')
+        if isinstance(findings_data, dict):
+            summary = findings_data.get('executive_summary', 'Анализ пользовательских интервью выявил ключевые проблемы и возможности для улучшения продукта.')
+        else:
+            summary = getattr(findings_data, 'executive_summary', 'Анализ пользовательских интервью выявил ключевые проблемы и возможности для улучшения продукта.')
+        
+        # Отладочная информация убрана для продакшена
+        
         return f"""
         <div class="page" id="summary">
             <div class="container">

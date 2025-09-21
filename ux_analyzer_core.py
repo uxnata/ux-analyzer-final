@@ -152,7 +152,9 @@ class AdvancedUXAnalyzer:
 
         try:
             response = self.api_wrapper.generate_content(prompt, max_tokens=4000)
+            print(f"🔍 API Response for interview {interview_id}: {response[:200]}...")
             data = self.api_wrapper.extract_json(response)
+            print(f"🔍 Extracted data: {data}")
             
             # Создаем InterviewSummary
             return InterviewSummary(

@@ -570,9 +570,9 @@ class EnhancedReportGenerator:
         </div>
         """
 
-    def _generate_personas_section(self, personas: List[Dict]) -> str:
+    def _generate_personas_section(self, personas) -> str:
         """Генерация секции персон"""
-        if not personas:
+        if not personas or not isinstance(personas, list):
             return ""
 
         personas_html = ""
@@ -653,9 +653,9 @@ class EnhancedReportGenerator:
         </div>
         """
 
-    def _generate_insights_section(self, insights: List[Dict]) -> str:
+    def _generate_insights_section(self, insights) -> str:
         """Генерация секции инсайтов"""
-        if not insights:
+        if not insights or not isinstance(insights, list):
             return ""
 
         insights_html = ""
@@ -698,9 +698,9 @@ class EnhancedReportGenerator:
         </div>
         """
 
-    def _generate_pain_points_section(self, insights: List[Dict]) -> str:
+    def _generate_pain_points_section(self, insights) -> str:
         """Генерация секции проблем"""
-        if not insights:
+        if not insights or not isinstance(insights, list):
             return ""
 
         return f"""
@@ -731,9 +731,9 @@ class EnhancedReportGenerator:
         </div>
         """
 
-    def _generate_behavioral_patterns_section(self, patterns: List[Dict]) -> str:
+    def _generate_behavioral_patterns_section(self, patterns) -> str:
         """Генерация секции поведенческих паттернов"""
-        if not patterns:
+        if not patterns or not isinstance(patterns, list):
             return ""
 
         patterns_html = ""
@@ -761,8 +761,11 @@ class EnhancedReportGenerator:
         </div>
         """
 
-    def _generate_emotional_journey_section(self, summaries: List) -> str:
+    def _generate_emotional_journey_section(self, summaries) -> str:
         """Генерация секции эмоционального пути"""
+        if not summaries or not isinstance(summaries, list):
+            return ""
+            
         return f"""
         <div class="page" id="emotions">
             <div class="container">
@@ -777,8 +780,11 @@ class EnhancedReportGenerator:
         </div>
         """
 
-    def _generate_contradictions_section(self, summaries: List) -> str:
+    def _generate_contradictions_section(self, summaries) -> str:
         """Генерация секции противоречий"""
+        if not summaries or not isinstance(summaries, list):
+            return ""
+            
         return f"""
         <div class="page" id="contradictions">
             <div class="container">
@@ -793,10 +799,13 @@ class EnhancedReportGenerator:
         </div>
         """
 
-    def _generate_quotes_section(self, summaries: List) -> str:
+    def _generate_quotes_section(self, summaries) -> str:
         """Генерация секции цитат"""
         # Собираем все цитаты
         all_quotes = []
+        if not summaries or not isinstance(summaries, list):
+            return ""
+            
         for summary in summaries:
             if hasattr(summary, 'quotes'):
                 for quote in summary.quotes:

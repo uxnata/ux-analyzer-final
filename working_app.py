@@ -5,6 +5,11 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 import streamlit.components.v1 as components
 
+# Импорты наших классов
+from ux_analyzer_classes import CompanyConfig, BriefManager
+from ux_analyzer_core import AdvancedUXAnalyzer
+from ux_report_generator import EnhancedReportGenerator
+
 def read_docx(file):
     """Читает содержимое .docx файла"""
     try:
@@ -119,8 +124,8 @@ def analyze_transcripts(transcripts_text):
         'positive_density': positive_count / max(len(words) / 1000, 1)  # Положительных на 1000 слов
     }
 
-def generate_custom_html_report(data, selected_sections):
-    """Генерация HTML отчета с выбранными разделами"""
+# def generate_custom_html_report(data, selected_sections):  # УДАЛЕНО - используется EnhancedReportGenerator
+    # """Генерация HTML отчета с выбранными разделами"""
     
     # Извлекаем данные
     company = data.get('company', 'Company')
@@ -991,8 +996,8 @@ def generate_custom_html_report(data, selected_sections):
     
     return html_content
 
-def generate_detailed_html_report(data):
-    """Генерация детального HTML отчета"""
+# def generate_detailed_html_report(data):  # УДАЛЕНО - используется EnhancedReportGenerator
+    # """Генерация детального HTML отчета"""
     
     # Извлекаем данные
     company = data.get('company', 'Company')
@@ -2027,153 +2032,58 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
             content = read_file_content(file)
             transcripts.append(content)
         
-        # Реальный анализ через OpenRouter API
+        # Реальный анализ через новые классы
         status_text.text("🤖 Анализ через Claude 3.5 Sonnet...")
         progress_bar.progress(40)
         
         try:
-            import requests
+            # Создаем анализатор
+            analyzer = AdvancedUXAnalyzer(api_key)
             
-            # Подготавливаем данные для анализа
-            all_transcripts = "\n\n".join(transcripts)
-            brief_text = ""
+            # Устанавливаем бриф если есть
             if uploaded_brief:
                 brief_text = read_file_content(uploaded_brief)
+                analyzer.set_brief(brief_text)
             
-            # Формируем детальный запрос к OpenRouter для анализа
-            brief_prompt = f"""
-Ты - эксперт по UX-исследованиям с 10+ летним опытом. Проанализируй следующие данные пользовательских интервью и создай максимально подробный отчет.
-
-БРИФ ИССЛЕДОВАНИЯ:
-{brief_text if brief_text else "Бриф не предоставлен"}
-
-ТРАНСКРИПТЫ ИНТЕРВЬЮ:
-{all_transcripts[:12000]}
-
-ЗАДАЧИ АНАЛИЗА:
-
-1. ОТВЕТЫ НА ВОПРОСЫ БРИФА:
-- Ответь на каждый вопрос из брифа максимально подробно
-- Используй конкретные цитаты из интервью для подтверждения каждого вывода
-- Укажи, сколько раз упоминалась каждая проблема/особенность
-- Приведи примеры из разных интервью
-
-2. ДЕТАЛЬНЫЕ ПЕРСОНЫ ПОЛЬЗОВАТЕЛЕЙ:
-Создай 3-4 УНИКАЛЬНЫЕ персоны на основе РЕАЛЬНЫХ данных интервью.
-
-КРИТИЧЕСКИ ВАЖНО:
-1. Каждая персона = синтез 2-3 РЕАЛЬНЫХ респондентов
-2. Используй ТОЛЬКО факты из интервью
-3. НЕ придумывай детали - только из данных
-4. Минимум 5 реальных цитат на персону
-5. Связывай с целевой аудиторией брифа
-
-Структура каждой персоны:
-- persona_id: "P001", "P002", etc.
-- name: "Имя отражающее характер (НЕ реальное имя)"
-- based_on_interviews: [номера интервью]
-- tagline: "РЕАЛЬНАЯ цитата характеризующая персону"
-- description: "Детальное описание ТОЛЬКО из данных респондентов"
-- demographics: возраст, пол, профессия, локация, семейное положение, доход, образование
-- real_life_context: жизненная ситуация, рабочая среда, ежедневные вызовы, социальный круг, типичный день
-- personality_traits: черты выведенные из поведения
-- goals: ТОЧНЫЕ цели из интервью
-- frustrations: ТОЧНЫЕ фрустрации из данных
-- needs: специфические потребности
-- tech_behavior: устройства, приложения, технический комфорт, стиль обучения
-- real_quotes: 5+ ПОЛНЫХ ТОЧНЫХ цитат (минимум 80 слов каждая)
-- typical_scenario: РЕАЛЬНЫЙ сценарий из рассказов
-
-3. КЛЮЧЕВЫЕ ПРОБЛЕМЫ:
-- Список всех выявленных проблем с частотой упоминаний
-- Критичность каждой проблемы (1-5)
-- Влияние на пользовательский опыт
-- Конкретные цитаты для каждой проблемы
-
-4. ПОТРЕБНОСТИ ПОЛЬЗОВАТЕЛЕЙ:
-- Явные потребности (что говорят пользователи)
-- Скрытые потребности (что можно вывести из поведения)
-- Приоритизация потребностей
-- Связь потребностей с проблемами
-
-5. РЕКОМЕНДАЦИИ:
-- Конкретные действия для решения каждой проблемы
-- Приоритизация рекомендаций
-- Ожидаемый эффект от внедрения
-
-6. ЗНАЧИМЫЕ ЦИТАТЫ:
-- 10-15 самых показательных цитат
-- Контекст каждой цитаты
-- К какой проблеме/потребности относится
-
-СТРУКТУРА ОТВЕТА:
-Начни с краткого резюме (2-3 предложения), затем подробно раскрой каждый пункт.
-Используй заголовки и подзаголовки для структурирования.
-Отчет должен быть на русском языке.
-"""
-            
-            # Отправляем запрос к OpenRouter
-            status_text.text("🌐 Отправка запроса к API...")
+            # Запускаем анализ
+            status_text.text("🔄 Запуск комплексного анализа...")
             progress_bar.progress(60)
             
-            response = requests.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "anthropic/claude-3.5-sonnet",
-                    "messages": [
-                        {"role": "user", "content": brief_prompt}
-                    ],
-                    "max_tokens": 6000,
-                    "temperature": 0.7
-                }
-            )
+            analysis_results = analyzer.analyze_transcripts(transcripts)
             
-            if response.status_code != 200:
-                if response.status_code == 401:
-                    st.error("❌ Неверный API ключ! Проверьте ключ в настройках.")
-                elif response.status_code == 429:
-                    st.error("❌ Превышен лимит запросов. Попробуйте позже.")
-                else:
-                    st.error(f"❌ Ошибка API: {response.status_code}")
+            status_text.text("✅ Анализ завершен!")
+            progress_bar.progress(80)
             
-            if response.status_code == 200:
-                analysis_result = response.json()["choices"][0]["message"]["content"]
-                status_text.text("✅ Анализ завершен!")
-                progress_bar.progress(80)
-            else:
-                analysis_result = f"Ошибка API: {response.status_code} - {response.text}"
-                st.error("⚠️ Ошибка при обращении к API")
+            # Извлекаем результаты
+            analysis_result = "Анализ выполнен успешно"
+            report_data = analysis_results
             
         except Exception as e:
             analysis_result = f"Ошибка анализа: {str(e)}"
             st.error(f"❌ Ошибка: {e}")
+            report_data = None
         
         # Создаем структурированные данные для отчета
         status_text.text("📋 Генерация отчета...")
         progress_bar.progress(90)
         
-        report_data = {
-            "company": company_name,
-            "report_title": report_title,
-            "author": author,
-            "transcripts_count": len(transcripts),
-            "brief_uploaded": uploaded_brief is not None,
-            "status": "Анализ завершен успешно",
-            "analysis_result": analysis_result,
-            "all_transcripts": all_transcripts,
-            "brief_text": brief_text,
-            "total_chars": len(all_transcripts)
-        }
-        
-        # Генерируем полный HTML отчет
-        html_report = generate_detailed_html_report(report_data)
-        
-        # Сохраняем отчет в session_state для скачивания
-        st.session_state['html_report'] = html_report
+        if report_data:
+            # Создаем конфигурацию компании
+            company_config = CompanyConfig(
+                name=company_name,
+                report_title=report_title,
+                author=author
+            )
+            
+            # Генерируем полный HTML отчет
+            generator = EnhancedReportGenerator(company_config)
+            html_report = generator.generate_html(report_data)
+            
+            # Сохраняем отчет в session_state для скачивания
+            st.session_state['html_report'] = html_report
+        else:
+            st.error("❌ Не удалось сгенерировать отчет")
+            html_report = None
         
         # Завершаем прогресс
         status_text.text("🎉 Готово!")
@@ -2182,7 +2092,8 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
         st.success("🎉 Анализ успешно завершен!")
         
         # Сохраняем данные отчета в session_state
-        st.session_state['report_data'] = report_data
+        if report_data:
+            st.session_state['report_data'] = report_data
         
         # Показываем результаты
         st.markdown("## 📊 Настройка отчета")
@@ -2235,7 +2146,17 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
                     }
                     
                     # Генерируем кастомный отчет
-                    custom_html_report = generate_custom_html_report(st.session_state['report_data'], selected_sections)
+                    if 'report_data' in st.session_state and st.session_state['report_data']:
+                        company_config = CompanyConfig(
+                            name=st.session_state['report_data'].get('company', 'Company'),
+                            report_title=st.session_state['report_data'].get('report_title', 'UX Report'),
+                            author=st.session_state['report_data'].get('author', 'Research Team')
+                        )
+                        generator = EnhancedReportGenerator(company_config)
+                        custom_html_report = generator.generate_html(st.session_state['report_data'])
+                    else:
+                        st.error("❌ Данные отчета не найдены. Сначала выполните анализ.")
+                        custom_html_report = None
                     
                     # Сохраняем в session_state
                     st.session_state['custom_html_report'] = custom_html_report

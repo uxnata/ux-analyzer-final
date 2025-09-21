@@ -258,9 +258,9 @@ class AdvancedUXAnalyzer:
         total_emotions = sum(len(s.emotional_journey) for s in summaries)
         
         positive_emotions = sum(1 for s in summaries for e in s.emotional_journey 
-                              if isinstance(e, dict) and e.get('intensity', 0) > 5)
+                              if isinstance(e, dict) and isinstance(e.get('intensity', 0), (int, float)) and e.get('intensity', 0) > 5)
         negative_emotions = sum(1 for s in summaries for e in s.emotional_journey 
-                              if isinstance(e, dict) and e.get('intensity', 0) < 5)
+                              if isinstance(e, dict) and isinstance(e.get('intensity', 0), (int, float)) and e.get('intensity', 0) < 5)
 
         # Оценка NPS
         sentiments = [s.sentiment_score for s in summaries if s.sentiment_score != 0]
@@ -333,10 +333,21 @@ class AdvancedUXAnalyzer:
         # Паттерн: повторяющиеся проблемы
         for group_name, pains in cross_analysis.get('pain_groups', {}).items():
             if len(pains) > 1:
+                # Безопасно получаем максимальную серьезность
+                severities = []
+                for p in pains:
+                    severity = p.get('severity', 0)
+                    if isinstance(severity, str):
+                        try:
+                            severity = int(severity)
+                        except (ValueError, TypeError):
+                            severity = 0
+                    severities.append(severity)
+                
                 patterns.append({
                     'pattern': f"Повторяющаяся проблема: {group_name}",
                     'frequency': len(pains),
-                    'severity': max(p.get('severity', 0) for p in pains),
+                    'severity': max(severities) if severities else 0,
                     'description': f"Проблема '{group_name}' встречается в {len(pains)} интервью"
                 })
 
@@ -347,9 +358,9 @@ class AdvancedUXAnalyzer:
         segments = []
         
         # Простая сегментация по уровню фрустрации
-        high_frustration = [s for s in summaries if s.sentiment_score < -3]
-        medium_frustration = [s for s in summaries if -3 <= s.sentiment_score <= 3]
-        low_frustration = [s for s in summaries if s.sentiment_score > 3]
+        high_frustration = [s for s in summaries if isinstance(s.sentiment_score, (int, float)) and s.sentiment_score < -3]
+        medium_frustration = [s for s in summaries if isinstance(s.sentiment_score, (int, float)) and -3 <= s.sentiment_score <= 3]
+        low_frustration = [s for s in summaries if isinstance(s.sentiment_score, (int, float)) and s.sentiment_score > 3]
 
         if high_frustration:
             segments.append({
@@ -385,11 +396,11 @@ class AdvancedUXAnalyzer:
             # Находим репрезентативные интервью для сегмента
             segment_summaries = []
             if segment['name'] == 'Высокая фрустрация':
-                segment_summaries = [s for s in summaries if s.sentiment_score < -3]
+                segment_summaries = [s for s in summaries if isinstance(s.sentiment_score, (int, float)) and s.sentiment_score < -3]
             elif segment['name'] == 'Средняя фрустрация':
-                segment_summaries = [s for s in summaries if -3 <= s.sentiment_score <= 3]
+                segment_summaries = [s for s in summaries if isinstance(s.sentiment_score, (int, float)) and -3 <= s.sentiment_score <= 3]
             else:
-                segment_summaries = [s for s in summaries if s.sentiment_score > 3]
+                segment_summaries = [s for s in summaries if isinstance(s.sentiment_score, (int, float)) and s.sentiment_score > 3]
 
             if segment_summaries:
                 # Берем первое интервью как основу для персоны
@@ -432,10 +443,18 @@ class AdvancedUXAnalyzer:
         for summary in summaries:
             for pain in summary.pain_points:
                 if isinstance(pain, dict):
+                    # Безопасно получаем severity
+                    severity = pain.get('severity', 5)
+                    if isinstance(severity, str):
+                        try:
+                            severity = int(severity)
+                        except (ValueError, TypeError):
+                            severity = 5
+                    
                     all_pains.append({
                         'problem_title': pain.get('pain', ''),
                         'problem_description': pain.get('impact', ''),
-                        'severity': pain.get('severity', 5),
+                        'severity': severity,
                         'quotes': pain.get('quotes', []),
                         'affected_percentage': f"{len([s for s in summaries if any(p.get('pain', '') == pain.get('pain', '') for p in s.pain_points)]) / len(summaries) * 100:.0f}%"
                     })

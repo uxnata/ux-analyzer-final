@@ -39,7 +39,7 @@ Thumbs.db
 .ipynb_checkpoints/
 
 # Streamlit
-.streamlit/
+.streamlit/secrets.toml
 
 # Data files
 *.csv

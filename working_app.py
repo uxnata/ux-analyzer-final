@@ -2061,6 +2061,22 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
             st.write(f"Тип результата: {type(analysis_results)}")
             st.write(f"Ключи результата: {list(analysis_results.keys()) if isinstance(analysis_results, dict) else 'Не словарь'}")
             
+            # Детальная отладка
+            if isinstance(analysis_results, dict):
+                st.write("🔍 Детальная отладка:")
+                st.write(f"findings: {type(analysis_results.get('findings'))}")
+                st.write(f"personas: {len(analysis_results.get('personas', []))}")
+                st.write(f"interview_summaries: {len(analysis_results.get('interview_summaries', []))}")
+                
+                # Проверяем findings
+                findings = analysis_results.get('findings')
+                if hasattr(findings, 'key_insights'):
+                    st.write(f"key_insights: {len(getattr(findings, 'key_insights', []))}")
+                elif isinstance(findings, dict):
+                    st.write(f"key_insights (dict): {len(findings.get('key_insights', []))}")
+                else:
+                    st.write(f"findings type: {type(findings)}")
+            
             status_text.text("✅ Анализ завершен!")
             progress_bar.progress(80)
             

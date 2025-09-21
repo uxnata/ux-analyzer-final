@@ -43,6 +43,7 @@ class EnhancedReportGenerator:
         
         # Если findings - это объект ResearchFindings, извлекаем данные
         if hasattr(findings, 'key_insights'):
+            print(f"🔍 DEBUG: findings is ResearchFindings object")
             findings_data = {
                 'executive_summary': getattr(findings, 'executive_summary', 'Анализ пользовательских интервью выявил ключевые проблемы и возможности для улучшения продукта.'),
                 'key_insights': getattr(findings, 'key_insights', []),
@@ -57,7 +58,9 @@ class EnhancedReportGenerator:
                 'brief_answers': getattr(findings, 'brief_answers', {}),
                 'goal_achievement': getattr(findings, 'goal_achievement', {})
             }
+            print(f"🔍 DEBUG: extracted key_insights: {len(findings_data.get('key_insights', []))}")
         else:
+            print(f"🔍 DEBUG: findings is not ResearchFindings object, type: {type(findings)}")
             findings_data = findings if findings else {
                 'executive_summary': 'Анализ пользовательских интервью выявил ключевые проблемы и возможности для улучшения продукта.',
                 'key_insights': [],
@@ -72,6 +75,7 @@ class EnhancedReportGenerator:
                 'brief_answers': {},
                 'goal_achievement': {}
             }
+            print(f"🔍 DEBUG: findings_data key_insights: {len(findings_data.get('key_insights', []))}")
         
         html_content = f"""
 <!DOCTYPE html>

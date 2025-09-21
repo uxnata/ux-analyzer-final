@@ -148,7 +148,11 @@ class AdvancedUXAnalyzer:
 - Каждая цитата должна быть ТОЧНОЙ (минимум 50 слов)
 - НЕ придумывай детали - только из данных
 - Связывай с целями и вопросами брифа
-- Анализируй эмоциональное состояние респондента"""
+- Анализируй эмоциональное состояние респондента
+- Для каждой проблемы укажи конкретные цитаты из интервью
+- Для каждой персоны создай детальное описание на основе реальных данных
+- Все инсайты должны быть подкреплены цитатами из интервью
+- ОБЯЗАТЕЛЬНО верни валидный JSON без дополнительного текста"""
 
         try:
             response = self.api_wrapper.generate_content(prompt, max_tokens=4000)
@@ -424,22 +428,50 @@ class AdvancedUXAnalyzer:
                 base_summary = segment_summaries[0]
                 profile = base_summary.respondent_profile
 
+                # Создаем детальное описание персоны на основе реальных данных
+                persona_name = f"Пользователь {i}"
+                if profile.get('profession'):
+                    persona_name = f"{profile.get('profession', 'Пользователь')} {i}"
+                
+                # Собираем все цитаты из интервью сегмента
+                all_quotes = []
+                for s in segment_summaries[:3]:
+                    for quote in s.quotes:
+                        if quote.get('text') and len(quote.get('text', '')) > 30:
+                            all_quotes.append(quote.get('text'))
+                
+                # Собираем все проблемы
+                all_pains = []
+                for s in segment_summaries[:3]:
+                    for pain in s.pain_points:
+                        if pain.get('pain'):
+                            all_pains.append(pain.get('pain'))
+                
+                # Собираем все потребности
+                all_needs = []
+                for s in segment_summaries[:3]:
+                    for need in s.needs:
+                        if need.get('need'):
+                            all_needs.append(need.get('need'))
+
                 persona = {
                     'persona_id': f'P{i:03d}',
-                    'name': f"Пользователь {i}",
+                    'name': persona_name,
                     'based_on_interviews': [s.interview_id for s in segment_summaries[:3]],
                     'tagline': f"Представитель сегмента '{segment['name']}'",
-                    'description': f"Пользователь из сегмента '{segment['name']}' с {segment['characteristics']}",
+                    'description': f"Детальный профиль пользователя из сегмента '{segment['name']}' с характеристиками: {segment['characteristics']}. Основан на анализе {len(segment_summaries)} интервью.",
                     'demographics': {
                         'age_range': profile.get('age_range', 'Не указано'),
                         'profession': profile.get('profession', 'Не указано'),
-                        'tech_literacy': profile.get('tech_literacy', 'Не указано')
+                        'tech_literacy': profile.get('tech_literacy', 'Не указано'),
+                        'experience_level': profile.get('experience_level', 'Не указано'),
+                        'pain_level': profile.get('pain_level', 'Не указано')
                     },
                     'goals': profile.get('main_goals', []),
-                    'frustrations': [p.get('pain', '') for p in base_summary.pain_points[:3]],
-                    'needs': [n.get('need', '') for n in base_summary.needs[:3]],
-                    'real_quotes': [q.get('text', '') for q in base_summary.quotes[:3] if q.get('text')],
-                    'typical_scenario': f"Типичный сценарий для {segment['name']}"
+                    'frustrations': all_pains[:5],  # Топ-5 проблем
+                    'needs': all_needs[:5],  # Топ-5 потребностей
+                    'real_quotes': all_quotes[:5],  # Топ-5 цитат
+                    'typical_scenario': f"Типичный сценарий использования для сегмента '{segment['name']}': {segment['characteristics']}"
                 }
                 personas.append(persona)
 

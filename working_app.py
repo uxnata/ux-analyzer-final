@@ -180,12 +180,10 @@ if st.button("🚀 Начать анализ", type="primary", disabled=not uplo
                     "https://openrouter.ai/api/v1/chat/completions",
                     headers={
                         "Authorization": f"Bearer {api_key}",
-                        "Content-Type": "application/json",
-                        "HTTP-Referer": "https://ux-analyzer-final.streamlit.app",
-                        "X-Title": "UX Analyzer"
+                        "Content-Type": "application/json"
                     },
                     json={
-                        "model": "google/gemini-pro",
+                        "model": "meta-llama/llama-3.1-8b-instruct:free",
                         "messages": [
                             {"role": "user", "content": brief_prompt}
                         ],
@@ -196,14 +194,24 @@ if st.button("🚀 Начать анализ", type="primary", disabled=not uplo
                 
                 # Показываем детали ошибки
                 st.write(f"Статус ответа: {response.status_code}")
+                st.write(f"Заголовки ответа: {dict(response.headers)}")
                 if response.status_code != 200:
                     st.write(f"Ответ API: {response.text}")
+                    if response.status_code == 401:
+                        st.error("❌ Неверный API ключ! Проверьте:")
+                        st.write("- Правильность ключа")
+                        st.write("- Активность аккаунта")
+                        st.write("- Баланс на OpenRouter")
+                    elif response.status_code == 429:
+                        st.error("❌ Превышен лимит запросов. Попробуйте позже.")
+                    else:
+                        st.error(f"❌ Ошибка API: {response.status_code}")
                 
                 if response.status_code == 200:
                     analysis_result = response.json()["choices"][0]["message"]["content"]
                     st.success("✅ Анализ выполнен через OpenRouter API!")
                 else:
-                    analysis_result = f"Ошибка API: {response.status_code}"
+                    analysis_result = f"Ошибка API: {response.status_code} - {response.text}"
                     st.warning("⚠️ Ошибка при обращении к API")
                 
             except Exception as e:

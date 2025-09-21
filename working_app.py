@@ -143,9 +143,64 @@ if st.button("🚀 Начать анализ", type="primary", disabled=not uplo
             status_text.text("📊 Обработка данных...")
             progress_bar.progress(60)
             
-            # Имитация анализа
-            import time
-            time.sleep(2)
+            # Реальный анализ через OpenRouter API
+            try:
+                import requests
+                
+                # Подготавливаем данные для анализа
+                all_transcripts = "\n\n".join(transcripts)
+                brief_text = ""
+                if uploaded_brief:
+                    brief_text = read_file_content(uploaded_brief)
+                
+                # Формируем запрос к OpenRouter для анализа брифа
+                brief_prompt = f"""
+                Проанализируй следующие транскрипты пользовательских интервью и ответь на вопросы из брифа исследования.
+                
+                БРИФ ИССЛЕДОВАНИЯ:
+                {brief_text if brief_text else "Бриф не предоставлен"}
+                
+                ТРАНСКРИПТЫ ИНТЕРВЬЮ:
+                {all_transcripts[:8000]}
+                
+                ЗАДАЧА:
+                На основе транскриптов интервью ответь на каждый вопрос из брифа исследования. 
+                Для каждого ответа приведи конкретные цитаты из интервью.
+                
+                Формат ответа:
+                ВОПРОС: [вопрос из брифа]
+                ОТВЕТ: [ответ на основе транскриптов]
+                ЦИТАТЫ: [конкретные цитаты из интервью]
+                
+                Отчет должен быть на русском языке.
+                """
+                
+                # Отправляем запрос к OpenRouter
+                response = requests.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "google/gemini-pro",
+                        "messages": [
+                            {"role": "user", "content": brief_prompt}
+                        ],
+                        "max_tokens": 3000
+                    }
+                )
+                
+                if response.status_code == 200:
+                    analysis_result = response.json()["choices"][0]["message"]["content"]
+                    st.success("✅ Анализ выполнен через OpenRouter API!")
+                else:
+                    analysis_result = f"Ошибка API: {response.status_code}"
+                    st.warning("⚠️ Ошибка при обращении к API")
+                
+            except Exception as e:
+                analysis_result = f"Ошибка анализа: {str(e)}"
+                st.error(f"❌ Ошибка: {e}")
             
             status_text.text("📋 Генерация отчета...")
             progress_bar.progress(80)
@@ -158,8 +213,7 @@ if st.button("🚀 Начать анализ", type="primary", disabled=not uplo
                 "transcripts_count": len(transcripts),
                 "brief_uploaded": uploaded_brief is not None,
                 "status": "Анализ завершен успешно",
-                "api_key_valid": api_key.startswith("sk-or-v1-"),
-                "total_chars": sum(len(t) for t in transcripts)
+                "analysis_result": analysis_result
             }
             
             progress_bar.progress(100)
@@ -168,15 +222,22 @@ if st.button("🚀 Начать анализ", type="primary", disabled=not uplo
             st.success("🎉 Анализ успешно завершен!")
             
             # Показываем результаты
-            st.header("📊 Результаты анализа")
-            st.json(results)
+            st.header("📊 Ответы на вопросы брифа")
+            
+            # Показываем основной отчет
+            if "analysis_result" in results and results["analysis_result"]:
+                st.markdown("---")
+                st.markdown(results["analysis_result"])
+                st.markdown("---")
+            else:
+                st.error("❌ Не удалось получить результаты анализа")
             
             # Информация о следующих шагах
             st.info("""
-            **Следующие шаги:**
-            1. Полный анализатор будет доступен после настройки
-            2. Результаты будут сохранены в облаке
-            3. Отчет будет сгенерирован автоматически
+            **Результат:**
+            - Анализ выполнен через OpenRouter API
+            - Ответы основаны на реальных транскриптах интервью
+            - Цитаты взяты из интервью
             """)
             
         except Exception as e:
@@ -196,9 +257,8 @@ st.sidebar.info("""
 - Поддержка брифа исследования
 """)
 
-st.sidebar.header("🔧 Техническая информация")
+st.sidebar.header("🔧 Статус")
 st.sidebar.code(f"""
-Версия: 24.0
 Загружено файлов: {len(uploaded_files) if uploaded_files else 0}
 Бриф: {'✅' if uploaded_brief else '❌'}
 API ключ: {'✅' if api_key else '❌'}

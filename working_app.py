@@ -871,370 +871,362 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Основной контент
-col1, col2 = st.columns([2, 1])
-
-with col1:
-    # Этап 1: Настройки
-    st.markdown("""
-    <div class="step-card">
-        <div class="step-header">
-            <div class="step-number">1</div>
-            <div>
-                <div class="step-title">⚙️ Настройки и конфигурация</div>
-                <div class="step-description">Настройте параметры анализа и введите API ключ</div>
-            </div>
+# Этап 1: Настройки
+st.markdown("""
+<div class="step-card">
+    <div class="step-header">
+        <div class="step-number">1</div>
+        <div>
+            <div class="step-title">⚙️ Настройки и конфигурация</div>
+            <div class="step-description">Настройте параметры анализа и введите API ключ</div>
         </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Настройки в карточке
+col1_1, col1_2 = st.columns(2)
+
+with col1_1:
+    api_key = st.text_input(
+        "🔑 OpenRouter API Key",
+        type="password",
+        placeholder="Введите ваш OpenRouter API ключ",
+        help="API ключ для OpenRouter"
+    )
+    
+    company_name = st.text_input(
+        "🏢 Название компании",
+        value="Company",
+        placeholder="Название компании"
+    )
+
+with col1_2:
+    report_title = st.text_input(
+        "📋 Название отчета",
+        value="UX Research Report",
+        placeholder="Название отчета"
+    )
+    
+    author = st.text_input(
+        "👤 Автор отчета",
+        value="Research Team",
+        placeholder="Автор отчета"
+    )
+
+# Этап 2: Загрузка данных
+st.markdown("""
+<div class="step-card">
+    <div class="step-header">
+        <div class="step-number">2</div>
+        <div>
+            <div class="step-title">📤 Загрузка данных</div>
+            <div class="step-description">Загрузите транскрипты интервью и бриф исследования</div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Загрузка файлов
+col2_1, col2_2 = st.columns(2)
+
+with col2_1:
+    st.markdown("""
+    <div class="upload-area">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">Загрузите транскрипты интервью</div>
     </div>
     """, unsafe_allow_html=True)
     
-    # Настройки в карточке
-    with st.container():
-        col1_1, col1_2 = st.columns(2)
-        
-        with col1_1:
-            api_key = st.text_input(
-                "🔑 OpenRouter API Key",
-                type="password",
-                placeholder="Введите ваш OpenRouter API ключ",
-                help="API ключ для OpenRouter"
-            )
-            
-            company_name = st.text_input(
-                "🏢 Название компании",
-                value="Company",
-                placeholder="Название компании"
-            )
-
-        with col1_2:
-            report_title = st.text_input(
-                "📋 Название отчета",
-                value="UX Research Report",
-                placeholder="Название отчета"
-            )
-            
-            author = st.text_input(
-                "👤 Автор отчета",
-                value="Research Team",
-                placeholder="Автор отчета"
-            )
+    uploaded_files = st.file_uploader(
+        "Выберите файлы с транскриптами",
+        type=['txt', 'md', 'docx', 'doc'],
+        accept_multiple_files=True,
+        help="Поддерживаемые форматы: .txt, .md, .docx, .doc",
+        label_visibility="collapsed"
+    )
     
-    # Этап 2: Загрузка данных
-    st.markdown("""
-    <div class="step-card">
-        <div class="step-header">
-            <div class="step-number">2</div>
-            <div>
-                <div class="step-title">📤 Загрузка данных</div>
-                <div class="step-description">Загрузите транскрипты интервью и бриф исследования</div>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Загрузка файлов
-    col2_1, col2_2 = st.columns(2)
-    
-    with col2_1:
-        st.markdown("""
-        <div class="upload-area">
-            <div class="upload-icon">📄</div>
-            <div class="upload-text">Загрузите транскрипты интервью</div>
+    if uploaded_files:
+        st.markdown(f"""
+        <div class="success-message">
+            ✅ Загружено {len(uploaded_files)} файлов
         </div>
         """, unsafe_allow_html=True)
         
-        uploaded_files = st.file_uploader(
-            "Выберите файлы с транскриптами",
-            type=['txt', 'md', 'docx', 'doc'],
-            accept_multiple_files=True,
-            help="Поддерживаемые форматы: .txt, .md, .docx, .doc",
-            label_visibility="collapsed"
-        )
-        
-        if uploaded_files:
-            st.markdown(f"""
-            <div class="success-message">
-                ✅ Загружено {len(uploaded_files)} файлов
-            </div>
-            """, unsafe_allow_html=True)
-            
-            for file in uploaded_files:
-                st.markdown(f"""
-                <div class="file-item">
-                    📄 {file.name} ({(file.size / 1024):.1f} KB)
-                </div>
-                """, unsafe_allow_html=True)
-
-    with col2_2:
-        st.markdown("""
-        <div class="upload-area">
-            <div class="upload-icon">📋</div>
-            <div class="upload-text">Загрузите бриф исследования (опционально)</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        uploaded_brief = st.file_uploader(
-            "Выберите файл с брифом",
-            type=['txt', 'md', 'docx', 'doc'],
-            help="Бриф с целями исследования",
-            label_visibility="collapsed"
-        )
-        
-        if uploaded_brief:
-            st.markdown(f"""
-            <div class="success-message">
-                ✅ Бриф загружен
-            </div>
-            """, unsafe_allow_html=True)
-            
+        for file in uploaded_files:
             st.markdown(f"""
             <div class="file-item">
-                📋 {uploaded_brief.name} ({(uploaded_brief.size / 1024):.1f} KB)
+                📄 {file.name} ({(file.size / 1024):.1f} KB)
             </div>
             """, unsafe_allow_html=True)
-    
-    # Этап 3: Анализ
+
+with col2_2:
     st.markdown("""
-    <div class="step-card">
-        <div class="step-header">
-            <div class="step-number">3</div>
-            <div>
-                <div class="step-title">🚀 Запуск анализа</div>
-                <div class="step-description">Запустите анализ данных и получите детальный отчет</div>
-            </div>
-        </div>
+    <div class="upload-area">
+        <div class="upload-icon">📋</div>
+        <div class="upload-text">Загрузите бриф исследования (опционально)</div>
     </div>
     """, unsafe_allow_html=True)
     
-    # Кнопка анализа
-    col3_1, col3_2, col3_3 = st.columns([1, 2, 1])
+    uploaded_brief = st.file_uploader(
+        "Выберите файл с брифом",
+        type=['txt', 'md', 'docx', 'doc'],
+        help="Бриф с целями исследования",
+        label_visibility="collapsed"
+    )
     
-    with col3_2:
-        if st.button("🚀 Начать анализ", type="primary", disabled=not (uploaded_files and api_key), use_container_width=True):
-            if not api_key:
-                st.markdown("""
-                <div class="error-message">
-                    ❌ Введите API ключ!
+    if uploaded_brief:
+        st.markdown(f"""
+        <div class="success-message">
+            ✅ Бриф загружен
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown(f"""
+        <div class="file-item">
+            📋 {uploaded_brief.name} ({(uploaded_brief.size / 1024):.1f} KB)
+        </div>
+        """, unsafe_allow_html=True)
+
+# Этап 3: Анализ
+st.markdown("""
+<div class="step-card">
+    <div class="step-header">
+        <div class="step-number">3</div>
+        <div>
+            <div class="step-title">🚀 Запуск анализа</div>
+            <div class="step-description">Запустите анализ данных и получите детальный отчет</div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Кнопка анализа
+col3_1, col3_2, col3_3 = st.columns([1, 2, 1])
+
+with col3_2:
+    if st.button("🚀 Начать анализ", type="primary", disabled=not (uploaded_files and api_key), use_container_width=True):
+        if not api_key:
+            st.markdown("""
+            <div class="error-message">
+                ❌ Введите API ключ!
+            </div>
+            """, unsafe_allow_html=True)
+        elif not uploaded_files:
+            st.markdown("""
+            <div class="error-message">
+                ❌ Загрузите транскрипты!
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            # Показываем загрузку
+            st.markdown("""
+            <div class="progress-container">
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">🔧 Настройка Claude 3.5 Sonnet...</div>
                 </div>
-                """, unsafe_allow_html=True)
-            elif not uploaded_files:
+                <div class="progress-bar" style="width: 20%;"></div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Простая проверка API ключа
+            if api_key.startswith("sk-or-v1-"):
                 st.markdown("""
-                <div class="error-message">
-                    ❌ Загрузите транскрипты!
+                <div class="success-message">
+                    ✅ API ключ валидный
                 </div>
                 """, unsafe_allow_html=True)
             else:
-                # Показываем загрузку
                 st.markdown("""
-                <div class="progress-container">
-                    <div style="text-align: center; margin-bottom: 1rem;">
-                        <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">🔧 Настройка Claude 3.5 Sonnet...</div>
-                    </div>
-                    <div class="progress-bar" style="width: 20%;"></div>
+                <div class="error-message">
+                    ⚠️ Проверьте формат API ключа
                 </div>
                 """, unsafe_allow_html=True)
-                
-                # Простая проверка API ключа
-                if api_key.startswith("sk-or-v1-"):
-                    st.markdown("""
-                    <div class="success-message">
-                        ✅ API ключ валидный
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown("""
-                    <div class="error-message">
-                        ⚠️ Проверьте формат API ключа
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                # Продолжение анализа...
-                st.markdown("""
-                <div class="progress-container">
-                    <div style="text-align: center; margin-bottom: 1rem;">
-                        <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">🔬 Запуск анализа...</div>
-                    </div>
-                    <div class="progress-bar" style="width: 40%;"></div>
+            
+            # Продолжение анализа...
+            st.markdown("""
+            <div class="progress-container">
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">🔬 Запуск анализа...</div>
                 </div>
-                """, unsafe_allow_html=True)
-                
-                # Читаем транскрипты
-                transcripts = []
-                for file in uploaded_files:
-                    content = read_file_content(file)
-                    transcripts.append(content)
-                
-                st.markdown("""
-                <div class="progress-container">
-                    <div style="text-align: center; margin-bottom: 1rem;">
-                        <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">📊 Обработка данных...</div>
-                    </div>
-                    <div class="progress-bar" style="width: 60%;"></div>
+                <div class="progress-bar" style="width: 40%;"></div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Читаем транскрипты
+            transcripts = []
+            for file in uploaded_files:
+                content = read_file_content(file)
+                transcripts.append(content)
+            
+            st.markdown("""
+            <div class="progress-container">
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">📊 Обработка данных...</div>
                 </div>
-                """, unsafe_allow_html=True)
+                <div class="progress-bar" style="width: 60%;"></div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Реальный анализ через OpenRouter API
+            try:
+                import requests
                 
-                # Реальный анализ через OpenRouter API
-                try:
-                    import requests
-                    
-                    # Подготавливаем данные для анализа
-                    all_transcripts = "\n\n".join(transcripts)
-                    brief_text = ""
-                    if uploaded_brief:
-                        brief_text = read_file_content(uploaded_brief)
-                    
-                    # Формируем запрос к OpenRouter для анализа брифа
-                    brief_prompt = f"""
-                    Проанализируй следующие транскрипты пользовательских интервью и ответь на вопросы из брифа исследования.
-                    
-                    БРИФ ИССЛЕДОВАНИЯ:
-                    {brief_text if brief_text else "Бриф не предоставлен"}
-                    
-                    ТРАНСКРИПТЫ ИНТЕРВЬЮ:
-                    {all_transcripts[:8000]}
-                    
-                    ЗАДАЧА:
-                    На основе транскриптов интервью ответь на каждый вопрос из брифа исследования. 
-                    Для каждого ответа приведи конкретные цитаты из интервью.
-                    
-                    Формат ответа:
-                    ВОПРОС: [вопрос из брифа]
-                    ОТВЕТ: [ответ на основе транскриптов]
-                    ЦИТАТЫ: [конкретные цитаты из интервью]
-                    
-                    Отчет должен быть на русском языке.
-                    """
-                    
-                    # Отправляем запрос к OpenRouter
-                    response = requests.post(
-                        "https://openrouter.ai/api/v1/chat/completions",
-                        headers={
-                            "Authorization": f"Bearer {api_key}",
-                            "Content-Type": "application/json"
-                        },
-                        json={
-                            "model": "anthropic/claude-3.5-sonnet",
-                            "messages": [
-                                {"role": "user", "content": brief_prompt}
-                            ],
-                            "max_tokens": 3000,
-                            "temperature": 0.7
-                        }
-                    )
-                    
-                    if response.status_code != 200:
-                        if response.status_code == 401:
-                            st.markdown("""
-                            <div class="error-message">
-                                ❌ Неверный API ключ! Проверьте ключ в настройках.
-                            </div>
-                            """, unsafe_allow_html=True)
-                        elif response.status_code == 429:
-                            st.markdown("""
-                            <div class="error-message">
-                                ❌ Превышен лимит запросов. Попробуйте позже.
-                            </div>
-                            """, unsafe_allow_html=True)
-                        else:
-                            st.markdown(f"""
-                            <div class="error-message">
-                                ❌ Ошибка API: {response.status_code}
-                            </div>
-                            """, unsafe_allow_html=True)
-                    
-                    if response.status_code == 200:
-                        analysis_result = response.json()["choices"][0]["message"]["content"]
+                # Подготавливаем данные для анализа
+                all_transcripts = "\n\n".join(transcripts)
+                brief_text = ""
+                if uploaded_brief:
+                    brief_text = read_file_content(uploaded_brief)
+                
+                # Формируем запрос к OpenRouter для анализа брифа
+                brief_prompt = f"""
+                Проанализируй следующие транскрипты пользовательских интервью и ответь на вопросы из брифа исследования.
+                
+                БРИФ ИССЛЕДОВАНИЯ:
+                {brief_text if brief_text else "Бриф не предоставлен"}
+                
+                ТРАНСКРИПТЫ ИНТЕРВЬЮ:
+                {all_transcripts[:8000]}
+                
+                ЗАДАЧА:
+                На основе транскриптов интервью ответь на каждый вопрос из брифа исследования. 
+                Для каждого ответа приведи конкретные цитаты из интервью.
+                
+                Формат ответа:
+                ВОПРОС: [вопрос из брифа]
+                ОТВЕТ: [ответ на основе транскриптов]
+                ЦИТАТЫ: [конкретные цитаты из интервью]
+                
+                Отчет должен быть на русском языке.
+                """
+                
+                # Отправляем запрос к OpenRouter
+                response = requests.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "anthropic/claude-3.5-sonnet",
+                        "messages": [
+                            {"role": "user", "content": brief_prompt}
+                        ],
+                        "max_tokens": 3000,
+                        "temperature": 0.7
+                    }
+                )
+                
+                if response.status_code != 200:
+                    if response.status_code == 401:
                         st.markdown("""
-                        <div class="success-message">
-                            ✅ Анализ выполнен через OpenRouter API!
+                        <div class="error-message">
+                            ❌ Неверный API ключ! Проверьте ключ в настройках.
+                        </div>
+                        """, unsafe_allow_html=True)
+                    elif response.status_code == 429:
+                        st.markdown("""
+                        <div class="error-message">
+                            ❌ Превышен лимит запросов. Попробуйте позже.
                         </div>
                         """, unsafe_allow_html=True)
                     else:
-                        analysis_result = f"Ошибка API: {response.status_code} - {response.text}"
-                        st.markdown("""
+                        st.markdown(f"""
                         <div class="error-message">
-                            ⚠️ Ошибка при обращении к API
+                            ❌ Ошибка API: {response.status_code}
                         </div>
                         """, unsafe_allow_html=True)
-                    
-                except Exception as e:
-                    analysis_result = f"Ошибка анализа: {str(e)}"
-                    st.markdown(f"""
-                    <div class="error-message">
-                        ❌ Ошибка: {e}
+                
+                if response.status_code == 200:
+                    analysis_result = response.json()["choices"][0]["message"]["content"]
+                    st.markdown("""
+                    <div class="success-message">
+                        ✅ Анализ выполнен через OpenRouter API!
                     </div>
                     """, unsafe_allow_html=True)
-                
-                # Генерация отчета
-                st.markdown("""
-                <div class="progress-container">
-                    <div style="text-align: center; margin-bottom: 1rem;">
-                        <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">📋 Генерация детального отчета...</div>
+                else:
+                    analysis_result = f"Ошибка API: {response.status_code} - {response.text}"
+                    st.markdown("""
+                    <div class="error-message">
+                        ⚠️ Ошибка при обращении к API
                     </div>
-                    <div class="progress-bar" style="width: 90%;"></div>
+                    """, unsafe_allow_html=True)
+            
+            except Exception as e:
+                analysis_result = f"Ошибка анализа: {str(e)}"
+                st.markdown(f"""
+                <div class="error-message">
+                    ❌ Ошибка: {e}
                 </div>
                 """, unsafe_allow_html=True)
-                
-                # Создаем структурированные данные для отчета
-                report_data = {
-                    "company": company_name,
-                    "report_title": report_title,
-                    "author": author,
-                    "transcripts_count": len(transcripts),
-                    "brief_uploaded": uploaded_brief is not None,
-                    "status": "Анализ завершен успешно",
-                    "analysis_result": analysis_result,
-                    "all_transcripts": all_transcripts,
-                    "brief_text": brief_text,
-                    "total_chars": len(all_transcripts)
-                }
-                
-                # Генерируем полный HTML отчет
-                html_report = generate_detailed_html_report(report_data)
-                
-                st.markdown("""
-                <div class="progress-container">
-                    <div style="text-align: center; margin-bottom: 1rem;">
-                        <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">✅ Анализ завершен!</div>
-                    </div>
-                    <div class="progress-bar" style="width: 100%;"></div>
+            
+            # Генерация отчета
+            st.markdown("""
+            <div class="progress-container">
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">📋 Генерация детального отчета...</div>
                 </div>
-                """, unsafe_allow_html=True)
-                
-                st.markdown("""
-                <div class="success-message">
-                    🎉 Анализ успешно завершен!
+                <div class="progress-bar" style="width: 90%;"></div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Создаем структурированные данные для отчета
+            report_data = {
+                "company": company_name,
+                "report_title": report_title,
+                "author": author,
+                "transcripts_count": len(transcripts),
+                "brief_uploaded": uploaded_brief is not None,
+                "status": "Анализ завершен успешно",
+                "analysis_result": analysis_result,
+                "all_transcripts": all_transcripts,
+                "brief_text": brief_text,
+                "total_chars": len(all_transcripts)
+            }
+            
+            # Генерируем полный HTML отчет
+            html_report = generate_detailed_html_report(report_data)
+            
+            st.markdown("""
+            <div class="progress-container">
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">✅ Анализ завершен!</div>
                 </div>
-                """, unsafe_allow_html=True)
-                
-                # Показываем результаты
-                st.markdown("## 📊 Детальный отчет")
-                
-                # Показываем HTML отчет
-                st.components.v1.html(html_report, height=800, scrolling=True)
-                
-                # Кнопка для скачивания HTML
-                st.download_button(
-                    label="📥 Скачать HTML отчет",
-                    data=html_report,
-                    file_name=f"ux_report_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
-                    mime="text/html",
-                    use_container_width=True
-                )
-                
-                # Информация о следующих шагах
-                st.markdown("""
-                <div class="info-card">
-                    <h3>🎯 Результат анализа</h3>
-                    <p>• Анализ выполнен через Claude 3.5 Sonnet</p>
-                    <p>• Сгенерирован детальный HTML отчет</p>
-                    <p>• Ответы основаны на реальных транскриптах интервью</p>
-                    <p>• Цитаты взяты из интервью</p>
-                </div>
-                """, unsafe_allow_html=True)
-
-with col2:
-    # Пустая боковая панель
-    st.markdown("")
+                <div class="progress-bar" style="width: 100%;"></div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("""
+            <div class="success-message">
+                🎉 Анализ успешно завершен!
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Показываем результаты
+            st.markdown("## 📊 Детальный отчет")
+            
+            # Показываем HTML отчет
+            st.components.v1.html(html_report, height=800, scrolling=True)
+            
+            # Кнопка для скачивания HTML
+            st.download_button(
+                label="📥 Скачать HTML отчет",
+                data=html_report,
+                file_name=f"ux_report_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
+                mime="text/html",
+                use_container_width=True
+            )
+            
+            # Информация о следующих шагах
+            st.markdown("""
+            <div class="info-card">
+                <h3>🎯 Результат анализа</h3>
+                <p>• Анализ выполнен через Claude 3.5 Sonnet</p>
+                <p>• Сгенерирован детальный HTML отчет</p>
+                <p>• Ответы основаны на реальных транскриптах интервью</p>
+                <p>• Цитаты взяты из интервью</p>
+            </div>
+            """, unsafe_allow_html=True)
 
 # Кнопка очистки внизу
 st.markdown("---")

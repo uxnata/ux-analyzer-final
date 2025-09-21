@@ -27,17 +27,13 @@ class EnhancedReportGenerator:
 
     def generate_html(self, analysis_data: Dict) -> str:
         """Генерация полного HTML отчета"""
-        print(f"🔍 Analysis data keys: {list(analysis_data.keys())}")
         findings = analysis_data.get('findings', {})
         personas = analysis_data.get('personas', [])
         recommendations = analysis_data.get('recommendations', {})
         brief_answers = analysis_data.get('brief_answers', {})
         current_metrics = analysis_data.get('current_metrics', {})
         interview_summaries = analysis_data.get('interview_summaries', [])
-        
-        print(f"🔍 Findings type: {type(findings)}")
-        print(f"🔍 Personas count: {len(personas)}")
-        print(f"🔍 Interview summaries count: {len(interview_summaries)}")
+        total_interviews = analysis_data.get('total_interviews', len(interview_summaries))
         
         # Если findings - это объект ResearchFindings, извлекаем данные
         if hasattr(findings, 'key_insights'):
@@ -86,6 +82,7 @@ class EnhancedReportGenerator:
     {self._generate_header()}
     {self._generate_table_of_contents()}
                    {self._generate_executive_summary(findings_data)}
+                   {self._generate_data_warnings(total_interviews, findings_data, personas, interview_summaries)}
                    {self._generate_brief_section(analysis_data.get('brief_data', {}))}
                    {self._generate_brief_answers(brief_answers)}
                    {self._generate_personas_section(personas)}
@@ -103,6 +100,53 @@ class EnhancedReportGenerator:
 </html>
 """
         return html_content
+
+    def _generate_data_warnings(self, total_interviews: int, findings_data: Dict, personas: List, interview_summaries: List) -> str:
+        """Генерация предупреждений о недостатке данных"""
+        warnings = []
+        
+        # Проверка количества интервью
+        if total_interviews < 5:
+            warnings.append(f"⚠️ <strong>Ограниченная выборка:</strong> Анализ основан на {total_interviews} интервью. Для качественного анализа рекомендуется минимум 5-8 интервью.")
+        
+        # Проверка персон
+        if len(personas) < 2:
+            warnings.append("⚠️ <strong>Недостаточно персон:</strong> Создано менее 2 персон. Для качественной сегментации рекомендуется больше интервью.")
+        
+        # Проверка инсайтов
+        key_insights = findings_data.get('key_insights', [])
+        if len(key_insights) < 3:
+            warnings.append("⚠️ <strong>Ограниченные инсайты:</strong> Выявлено менее 3 ключевых инсайтов. Рекомендуется расширить выборку интервью.")
+        
+        # Проверка цитат
+        total_quotes = 0
+        for summary in interview_summaries:
+            if hasattr(summary, 'quotes'):
+                total_quotes += len(summary.quotes)
+        
+        if total_quotes < 5:
+            warnings.append("⚠️ <strong>Недостаточно цитат:</strong> Собрано менее 5 значимых цитат. Рекомендуется более детальные интервью.")
+        
+        if not warnings:
+            return ""
+        
+        warnings_html = ""
+        for warning in warnings:
+            warnings_html += f'<div class="warning-card">{warning}</div>'
+        
+        return f"""
+        <div class="page" id="data-warnings">
+            <div class="container">
+                <h2>⚠️ Ограничения анализа</h2>
+                <div class="card">
+                    <p style="font-size: 1.1rem; color: #6b7280; margin-bottom: 20px;">
+                        Следующие ограничения могут повлиять на качество и надежность анализа:
+                    </p>
+                    {warnings_html}
+                </div>
+            </div>
+        </div>
+        """
 
     def _get_css_styles(self) -> str:
         """CSS стили для отчета"""
@@ -302,6 +346,19 @@ class EnhancedReportGenerator:
             padding: 20px;
             margin: 15px 0;
             border-radius: 0 8px 8px 0;
+        }
+
+        .warning-card {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            color: #92400e;
+        }
+
+        .warning-card strong {
+            color: #b45309;
         }
 
         .quote-text {
@@ -508,8 +565,6 @@ class EnhancedReportGenerator:
         else:
             summary = getattr(findings_data, 'executive_summary', 'Анализ пользовательских интервью выявил ключевые проблемы и возможности для улучшения продукта.')
         
-        # Отладочная информация убрана для продакшена
-        
         return f"""
         <div class="page" id="summary">
             <div class="container">
@@ -598,7 +653,18 @@ class EnhancedReportGenerator:
     def _generate_personas_section(self, personas) -> str:
         """Генерация секции персон"""
         if not personas or not isinstance(personas, list):
-            return ""
+            return """
+            <div class="page" id="personas">
+                <div class="container">
+                    <h2>Персоны пользователей</h2>
+                    <div class="card">
+                        <p style="color: #6b7280; font-style: italic;">
+                            ⚠️ Недостаточно данных для создания персон. Рекомендуется провести больше интервью для качественной сегментации пользователей.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            """
 
         personas_html = ""
         for persona in personas:
@@ -681,7 +747,18 @@ class EnhancedReportGenerator:
     def _generate_insights_section(self, insights) -> str:
         """Генерация секции инсайтов"""
         if not insights or not isinstance(insights, list):
-            return ""
+            return """
+            <div class="page" id="insights">
+                <div class="container">
+                    <h2>Ключевые инсайты</h2>
+                    <div class="card">
+                        <p style="color: #6b7280; font-style: italic;">
+                            ⚠️ Недостаточно данных для выявления ключевых инсайтов. Рекомендуется провести больше интервью для качественного анализа.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            """
 
         insights_html = ""
         for i, insight in enumerate(insights[:8], 1):

@@ -119,6 +119,878 @@ def analyze_transcripts(transcripts_text):
         'positive_density': positive_count / max(len(words) / 1000, 1)  # Положительных на 1000 слов
     }
 
+def generate_custom_html_report(data, selected_sections):
+    """Генерация HTML отчета с выбранными разделами"""
+    
+    # Извлекаем данные
+    company = data.get('company', 'Company')
+    report_title = data.get('report_title', 'UX Research Report')
+    author = data.get('author', 'Research Team')
+    transcripts_count = data.get('transcripts_count', 0)
+    brief_uploaded = data.get('brief_uploaded', False)
+    analysis_result = data.get('analysis_result', '')
+    all_transcripts = data.get('all_transcripts', '')
+    brief_text = data.get('brief_text', '')
+    total_chars = data.get('total_chars', 0)
+    
+    # Анализируем транскрипты для получения реальных выводов
+    transcript_analysis = analyze_transcripts(all_transcripts)
+    
+    # Текущая дата
+    current_date = datetime.now().strftime("%d.%m.%Y")
+    
+    # CSS стили в черно-бело-серых тонах
+    css_styles = """
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background: #ffffff;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 16px; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            margin: 40px auto;
+        }
+        
+        .header { 
+            background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
+            color: white; 
+            padding: 60px 40px; 
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0.3;
+        }
+        
+        .header h1 { 
+            margin: 0; 
+            font-size: 3.5em; 
+            font-weight: 800; 
+            letter-spacing: -0.02em;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p { 
+            margin: 20px 0 0 0; 
+            opacity: 0.95; 
+            font-size: 1.3em;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .content { 
+            padding: 60px 40px; 
+        }
+        
+        .section { 
+            margin-bottom: 50px; 
+        }
+        
+        .section h2 { 
+            font-size: 2.2em; 
+            font-weight: 700; 
+            color: #1f2937; 
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #1f2937;
+            position: relative;
+        }
+        
+        .section h2::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: #1f2937;
+            border-radius: 2px;
+        }
+        
+        .toc {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 40px;
+        }
+        
+        .toc h2 {
+            color: #1f2937;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .toc ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .toc li {
+            margin-bottom: 10px;
+        }
+        
+        .toc a {
+            color: #4b5563;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .toc a:hover {
+            color: #1f2937;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .insight {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .quote-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #6b7280;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .quote-text {
+            font-style: italic;
+            color: #4b5563;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .persona-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .persona-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .persona-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #6b7280;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-right: 20px;
+        }
+        
+        .persona-name {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+        
+        .persona-role {
+            color: #6b7280;
+            font-size: 0.9em;
+            margin: 5px 0 0 0;
+        }
+        
+        .persona-section {
+            margin-bottom: 20px;
+        }
+        
+        .persona-section h4 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .persona-section ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #4b5563;
+        }
+        
+        .persona-section li {
+            margin-bottom: 5px;
+        }
+        
+        .persona-quotes {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        
+        .persona-quotes h4 {
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        
+        .persona-quote {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid #6b7280;
+            font-style: italic;
+            color: #4b5563;
+        }
+        
+        .recommendation {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .recommendation h3 {
+            color: #1f2937;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .recommendation p {
+            color: #4b5563;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .metric-label {
+            color: #6b7280;
+            font-size: 1em;
+            font-weight: 500;
+        }
+        
+        .info-card {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 30px 0;
+            border-left: 5px solid #6b7280;
+        }
+        
+        .info-card h3 {
+            color: #1f2937;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .info-card p {
+            color: #4b5563;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .success-message {
+            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .error-message {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .progress-container {
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
+            height: 8px;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .file-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #6b7280;
+        }
+        
+        .sidebar-content {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .step-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+        }
+        
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+        
+        .step-number {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        
+        .step-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+        
+        .step-description {
+            color: #6b7280;
+            font-size: 1rem;
+            margin: 5px 0 0 0;
+        }
+        
+        .upload-area {
+            border: 3px dashed #d1d5db;
+            border-radius: 15px;
+            padding: 40px 30px;
+            text-align: center;
+            background: #f9fafb;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+        }
+        
+        .upload-area:hover {
+            border-color: #6b7280;
+            background: #f3f4f6;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            font-size: 1.1rem;
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 5px;
+        }
+        
+        .status-success {
+            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+            color: white;
+        }
+        
+        .status-warning {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+        }
+        
+        .status-error {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+        }
+        
+        .action-button {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(31, 41, 55, 0.4);
+        }
+        
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(31, 41, 55, 0.6);
+        }
+        
+        .clear-button {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(107, 114, 128, 0.4);
+        }
+        
+        .clear-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(107, 114, 128, 0.6);
+        }
+        
+        .main-header {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
+            padding: 40px 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 10px 30px rgba(31, 41, 55, 0.3);
+        }
+        
+        .main-header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .main-header p {
+            font-size: 1.2rem;
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+    </style>
+    """
+    
+    # Генерируем HTML отчет
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{report_title}</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+        {css_styles}
+    </head>
+    <body>
+        <div class="container">
+            <!-- Заголовок -->
+            <div class="header">
+                <h1>{report_title}</h1>
+                <p>Компания: {company} | Автор: {author} | Дата: {current_date}</p>
+            </div>
+            
+            <div class="content">
+                {f'''
+                <!-- Оглавление -->
+                <div class="toc">
+                    <h2>📋 Оглавление</h2>
+                    <ul>
+                        {f'<li><a href="#overview">1. Общий обзор</a></li>' if selected_sections.get('overview', False) else ''}
+                        {f'<li><a href="#brief">2. Бриф исследования</a></li>' if selected_sections.get('brief', False) else ''}
+                        {f'<li><a href="#brief-answers">3. Ответы на вопросы брифа</a></li>' if selected_sections.get('brief_answers', False) else ''}
+                        {f'<li><a href="#analysis">4. Анализ результатов</a></li>' if selected_sections.get('analysis', False) else ''}
+                        {f'<li><a href="#personas">5. Персоны пользователей</a></li>' if selected_sections.get('personas', False) else ''}
+                        {f'<li><a href="#insights">6. Ключевые инсайты</a></li>' if selected_sections.get('insights', False) else ''}
+                        {f'<li><a href="#pain-points">7. Болевые точки пользователей</a></li>' if selected_sections.get('pain_points', False) else ''}
+                        {f'<li><a href="#user-needs">8. Потребности пользователей</a></li>' if selected_sections.get('user_needs', False) else ''}
+                        {f'<li><a href="#behavioral-patterns">9. Поведенческие паттерны</a></li>' if selected_sections.get('behavioral', False) else ''}
+                        {f'<li><a href="#emotional-journey">10. Эмоциональное путешествие</a></li>' if selected_sections.get('emotional', False) else ''}
+                        {f'<li><a href="#contradictions">11. Противоречия в данных</a></li>' if selected_sections.get('contradictions', False) else ''}
+                        {f'<li><a href="#quotes">12. Значимые цитаты</a></li>' if selected_sections.get('quotes', False) else ''}
+                        {f'<li><a href="#recommendations">13. Рекомендации</a></li>' if selected_sections.get('recommendations', False) else ''}
+                        {f'<li><a href="#appendix">14. Приложение</a></li>' if selected_sections.get('appendix', False) else ''}
+                    </ul>
+                </div>
+                '''}
+                
+                {f'''
+                <!-- Общий обзор -->
+                <div class="section" id="overview">
+                    <h2>📊 Общий обзор</h2>
+                    <div class="insight">
+                        <h3>Краткое резюме исследования</h3>
+                        <p>На основе анализа <strong>{transcript_analysis.get('total_words', 0):,}</strong> слов из <strong>{transcripts_count}</strong> интервью 
+                        выявлены ключевые паттерны пользовательского поведения и основные проблемы взаимодействия с продуктом.</p>
+                        
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-value">{transcripts_count}</div>
+                                <div class="metric-label">Интервью проанализировано</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value">{transcript_analysis.get('total_words', 0):,}</div>
+                                <div class="metric-label">Слов в транскриптах</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value">{transcript_analysis.get('problems_found', 0)}</div>
+                                <div class="metric-label">Проблем выявлено</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value">{transcript_analysis.get('positive_mentions', 0)}</div>
+                                <div class="metric-label">Положительных упоминаний</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ''' if selected_sections.get('overview', False) else ''}
+                
+                {f'''
+                <!-- Бриф исследования -->
+                <div class="section" id="brief">
+                    <h2>📋 Бриф исследования</h2>
+                    <div class="card">
+                        <h3>Цели и задачи исследования</h3>
+                        <p>{brief_text if brief_text else 'Бриф не предоставлен'}</p>
+                    </div>
+                </div>
+                ''' if selected_sections.get('brief', False) else ''}
+                
+                {f'''
+                <!-- Ответы на вопросы брифа -->
+                <div class="section" id="brief-answers">
+                    <h2>❓ Ответы на вопросы брифа</h2>
+                    <div class="card">
+                        <h3>Детальные ответы на основе анализа интервью</h3>
+                        <p>{analysis_result if analysis_result else 'Анализ не выполнен'}</p>
+                    </div>
+                </div>
+                ''' if selected_sections.get('brief_answers', False) else ''}
+                
+                {f'''
+                <!-- Анализ результатов -->
+                <div class="section" id="analysis">
+                    <h2>🔍 Анализ результатов</h2>
+                    <div class="insight">
+                        <h3>Основные выводы по транскриптам</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
+                            <div style="background: #f3f4f6; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #6b7280;">
+                                <h4 style="color: #1f2937; margin-bottom: 0.5rem;">📊 Объем данных</h4>
+                                <p style="font-size: 1.1rem; font-weight: 600; color: #374151; margin: 0;">{transcript_analysis.get('total_words', 0):,} слов в {transcripts_count} интервью</p>
+                            </div>
+                            <div style="background: #f3f4f6; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #6b7280;">
+                                <h4 style="color: #1f2937; margin-bottom: 0.5rem;">😊 Эмоциональная окраска</h4>
+                                <p style="font-size: 1.1rem; font-weight: 600; color: #374151; margin: 0;">{'Преобладают положительные отзывы' if transcript_analysis.get('sentiment_ratio', 0) > 1 else 'Преобладают нейтральные/отрицательные отзывы'}</p>
+                            </div>
+                            <div style="background: #f3f4f6; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #6b7280;">
+                                <h4 style="color: #1f2937; margin-bottom: 0.5rem;">⚠️ Выявленные проблемы</h4>
+                                <p style="font-size: 1.1rem; font-weight: 600; color: #374151; margin: 0;">{transcript_analysis.get('problems_found', 0)} упоминаний проблемных моментов</p>
+                            </div>
+                        </div>
+                        
+                        <div style="background: #f3f4f6; padding: 2rem; border-radius: 12px; margin: 2rem 0; border: 1px solid #e5e7eb;">
+                            <h4 style="color: #1f2937; margin-bottom: 1rem;">📋 Детальный анализ</h4>
+                            <div style="background: white; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #6b7280; font-family: 'Courier New', monospace; font-size: 0.95rem; line-height: 1.6; color: #374151; white-space: pre-wrap;">{analysis_result if analysis_result else 'Анализ не выполнен'}</div>
+                        </div>
+                    </div>
+                </div>
+                ''' if selected_sections.get('analysis', False) else ''}
+                
+                {f'''
+                <!-- Персоны пользователей -->
+                <div class="section" id="personas">
+                    <h2>👥 Персоны пользователей</h2>
+                    <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
+                        <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem; font-size: 1.1rem;">
+                            На основе анализа <strong>{transcript_analysis.get('total_words', 0):,}</strong> слов и <strong>{transcripts_count}</strong> интервью 
+                            созданы детальные персоны пользователей, отражающие реальные потребности и поведение респондентов.
+                        </p>
+                        <div style="background: white; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #6b7280;">
+                            <p style="color: #6b7280; font-style: italic; margin: 0;">
+                                "Детальные персоны будут доступны после полного анализа через OpenRouter API с реальными данными из интервью"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                ''' if selected_sections.get('personas', False) else ''}
+                
+                {f'''
+                <!-- Ключевые инсайты -->
+                <div class="section" id="insights">
+                    <h2>💡 Ключевые инсайты</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                        <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; border-left: 6px solid #6b7280;">
+                            <h3 style="color: #1f2937; margin-bottom: 1rem; font-size: 1.3rem;">👥 Пользовательское поведение</h3>
+                            <p style="color: #374151; line-height: 1.6; margin-bottom: 1rem;">На основе анализа <strong>{transcript_analysis.get('total_words', 0):,}</strong> слов выявлены ключевые паттерны поведения пользователей.</p>
+                            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                <div style="background: #374151; color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600;">
+                                    ✅ {transcript_analysis.get('positive_mentions', 0)} положительных
+                                </div>
+                                <div style="background: #6b7280; color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600;">
+                                    ❌ {transcript_analysis.get('negative_mentions', 0)} отрицательных
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; border-left: 6px solid #6b7280;">
+                            <h3 style="color: #1f2937; margin-bottom: 1rem; font-size: 1.3rem;">⚠️ Болевые точки</h3>
+                            <p style="color: #374151; line-height: 1.6; margin-bottom: 1rem;">Выявлено <strong>{transcript_analysis.get('problems_found', 0)}</strong> упоминаний проблемных моментов в транскриптах.</p>
+                            <div style="background: white; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                                <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Плотность проблем: <strong>{transcript_analysis.get('problem_density', 0):.1f}</strong> на 1K слов</p>
+                            </div>
+                        </div>
+                        
+                        <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; border-left: 6px solid #6b7280;">
+                            <h3 style="color: #1f2937; margin-bottom: 1rem; font-size: 1.3rem;">🚀 Возможности улучшения</h3>
+                            <p style="color: #374151; line-height: 1.6; margin-bottom: 1rem;">Соотношение положительных к отрицательным упоминаниям: <strong>{transcript_analysis.get('sentiment_ratio', 0):.1f}:1</strong></p>
+                            <div style="background: white; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                                <p style="color: #6b7280; font-size: 0.9rem; margin: 0; font-weight: 600;">
+                                    {'🔧 Требуется работа над улучшением пользовательского опыта' if transcript_analysis.get('sentiment_ratio', 0) < 1 else '✅ Пользователи в целом довольны продуктом'}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ''' if selected_sections.get('insights', False) else ''}
+                
+                {f'''
+                <!-- Болевые точки пользователей -->
+                <div class="section" id="pain-points">
+                    <h2>⚠️ Болевые точки пользователей</h2>
+                    <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
+                        <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem; font-size: 1.1rem;">
+                            На основе анализа выявлены ключевые проблемы, с которыми сталкиваются пользователи при взаимодействии с продуктом.
+                        </p>
+                        <div style="background: white; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #6b7280;">
+                            <h4 style="color: #1f2937; margin-bottom: 1rem;">🔧 Конкретные паттерны проблем</h4>
+                            <ul style="color: #374151; line-height: 1.6; margin: 0; padding-left: 1.5rem;">
+                                {''.join([f'<li style="margin-bottom: 0.5rem;">{problem}</li>' for problem in transcript_analysis.get('specific_problems', [])]) if transcript_analysis.get('specific_problems') else '<li>Конкретные проблемы будут выявлены после полного анализа</li>'}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                ''' if selected_sections.get('pain_points', False) else ''}
+                
+                {f'''
+                <!-- Потребности пользователей -->
+                <div class="section" id="user-needs">
+                    <h2>🎯 Потребности пользователей</h2>
+                    <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
+                        <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem; font-size: 1.1rem;">
+                            Выявленные потребности пользователей на основе их высказываний и поведения в интервью.
+                        </p>
+                        <div style="background: white; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #6b7280;">
+                            <h4 style="color: #1f2937; margin-bottom: 1rem;">🌟 Выявленные преимущества</h4>
+                            <ul style="color: #374151; line-height: 1.6; margin: 0; padding-left: 1.5rem;">
+                                {''.join([f'<li style="margin-bottom: 0.5rem;">{moment}</li>' for moment in transcript_analysis.get('positive_moments', [])]) if transcript_analysis.get('positive_moments') else '<li>Потребности будут детализированы после полного анализа</li>'}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                ''' if selected_sections.get('user_needs', False) else ''}
+                
+                {f'''
+                <!-- Поведенческие паттерны -->
+                <div class="section" id="behavioral-patterns">
+                    <h2>🔄 Поведенческие паттерны</h2>
+                    <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
+                        <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem; font-size: 1.1rem;">
+                            Анализ поведения пользователей и выявленные паттерны взаимодействия с продуктом.
+                        </p>
+                        <div style="background: white; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #6b7280;">
+                            <p style="color: #6b7280; font-style: italic; margin: 0;">
+                                "Детальные поведенческие паттерны будут доступны после полного анализа через OpenRouter API"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                ''' if selected_sections.get('behavioral', False) else ''}
+                
+                {f'''
+                <!-- Эмоциональное путешествие -->
+                <div class="section" id="emotional-journey">
+                    <h2>😊 Эмоциональное путешествие</h2>
+                    <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
+                        <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem; font-size: 1.1rem;">
+                            Анализ эмоциональных состояний пользователей на разных этапах взаимодействия с продуктом.
+                        </p>
+                        <div style="background: white; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #6b7280;">
+                            <p style="color: #6b7280; font-style: italic; margin: 0;">
+                                "Эмоциональное путешествие будет детализировано после полного анализа через OpenRouter API"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                ''' if selected_sections.get('emotional', False) else ''}
+                
+                {f'''
+                <!-- Противоречия -->
+                <div class="section" id="contradictions">
+                    <h2>⚖️ Противоречия в данных</h2>
+                    <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
+                        <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem; font-size: 1.1rem;">
+                            Выявленные противоречия и несоответствия в высказываниях пользователей.
+                        </p>
+                        <div style="background: white; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #6b7280;">
+                            <p style="color: #6b7280; font-style: italic; margin: 0;">
+                                "Противоречия будут выявлены после полного анализа через OpenRouter API"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                ''' if selected_sections.get('contradictions', False) else ''}
+                
+                {f'''
+                <!-- Значимые цитаты -->
+                <div class="section" id="quotes">
+                    <h2>💬 Значимые цитаты пользователей</h2>
+                    <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
+                        <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem; font-size: 1.1rem;">
+                            На основе анализа <strong>{transcript_analysis.get('total_words', 0):,}</strong> слов выделены наиболее показательные высказывания пользователей, 
+                            отражающие их опыт взаимодействия с продуктом.
+                        </p>
+                        <div style="background: white; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #6b7280;">
+                            <p style="color: #6b7280; font-style: italic; margin: 0;">
+                                "Детальные цитаты будут доступны после полного анализа через OpenRouter API"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                ''' if selected_sections.get('quotes', False) else ''}
+                
+                {f'''
+                <!-- Рекомендации -->
+                <div class="section" id="recommendations">
+                    <h2>🎯 Рекомендации</h2>
+                    <div class="recommendation">
+                        <h3>Краткосрочные действия</h3>
+                        <p>• Улучшить навигацию в ключевых разделах продукта</p>
+                        <p>• Оптимизировать процесс регистрации</p>
+                        <p>• Добавить подсказки для новых пользователей</p>
+                    </div>
+                    
+                    <div class="recommendation">
+                        <h3>Долгосрочные улучшения</h3>
+                        <p>• Переработать пользовательский интерфейс</p>
+                        <p>• Внедрить персонализацию контента</p>
+                        <p>• Создать систему обратной связи</p>
+                    </div>
+                </div>
+                ''' if selected_sections.get('recommendations', False) else ''}
+                
+                {f'''
+                <!-- Приложение -->
+                <div class="section" id="appendix">
+                    <h2>📎 Приложение</h2>
+                    <div class="card">
+                        <h3>Дополнительные данные</h3>
+                        <p><strong>Общее количество символов:</strong> {total_chars:,}</p>
+                        <p><strong>Количество интервью:</strong> {transcripts_count}</p>
+                        <p><strong>Статус анализа:</strong> {'Завершен' if analysis_result else 'Не выполнен'}</p>
+                        <p><strong>Бриф загружен:</strong> {'Да' if brief_uploaded else 'Нет'}</p>
+                    </div>
+                </div>
+                ''' if selected_sections.get('appendix', False) else ''}
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return html_content
+
 def generate_detailed_html_report(data):
     """Генерация детального HTML отчета"""
     
@@ -162,7 +1034,7 @@ def generate_detailed_html_report(data):
         }
         
         .header {
-            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #3b82f6 100%);
+            background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
             color: white;
             padding: 50px 30px;
             text-align: center;
@@ -239,7 +1111,7 @@ def generate_detailed_html_report(data):
         }
         
         .quote {
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             padding: 25px;
             border-left: 6px solid #1e40af;
             margin: 20px 0;
@@ -249,7 +1121,7 @@ def generate_detailed_html_report(data):
         }
         
         .insight {
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             padding: 25px;
             margin: 20px 0;
             border-radius: 12px;
@@ -258,7 +1130,7 @@ def generate_detailed_html_report(data):
         }
         
         .problem {
-            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             padding: 25px;
             margin: 20px 0;
             border-radius: 12px;
@@ -267,7 +1139,7 @@ def generate_detailed_html_report(data):
         }
         
         .recommendation {
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             padding: 25px;
             margin: 20px 0;
             border-radius: 12px;
@@ -276,7 +1148,7 @@ def generate_detailed_html_report(data):
         }
         
         .brief-section {
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             padding: 35px;
             border-radius: 16px;
             border: 3px solid #0ea5e9;
@@ -294,7 +1166,7 @@ def generate_detailed_html_report(data):
         }
         
         .brief-answer {
-            background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             padding: 25px;
             margin: 15px 0;
             border-radius: 12px;
@@ -313,7 +1185,7 @@ def generate_detailed_html_report(data):
         }
         
         .toc {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             padding: 35px;
             border-radius: 16px;
             margin: 30px 0;
@@ -342,7 +1214,7 @@ def generate_detailed_html_report(data):
         }
         
         .appendix {
-            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             padding: 35px;
             border-radius: 16px;
             margin: 30px 0;
@@ -375,13 +1247,13 @@ def generate_detailed_html_report(data):
         }
         
         .stats-table th {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
             color: white;
             font-weight: 700;
         }
         
         .highlight {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             padding: 3px 6px;
             border-radius: 6px;
             font-weight: 600;
@@ -396,22 +1268,22 @@ def generate_detailed_html_report(data):
         }
         
         .badge-success {
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             color: #065f46;
         }
         
         .badge-warning {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             color: #92400e;
         }
         
         .badge-danger {
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             color: #991b1b;
         }
         
         .trace-section {
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             padding: 25px;
             margin: 20px 0;
             border-radius: 12px;
@@ -457,14 +1329,17 @@ def generate_detailed_html_report(data):
                     <li><a href="#overview">1. Общий обзор</a></li>
                     <li><a href="#brief">2. Бриф исследования</a></li>
                     <li><a href="#brief-answers">3. Ответы на вопросы брифа</a></li>
-                    <li><a href="#metrics">4. Ключевые метрики</a></li>
-                    <li><a href="#analysis">5. Анализ результатов</a></li>
-                    <li><a href="#personas">6. Персоны пользователей</a></li>
-                    <li><a href="#insights">7. Ключевые инсайты</a></li>
-                    <li><a href="#detailed-problems">8. Детальные проблемы</a></li>
-                    <li><a href="#quotes">9. Значимые цитаты</a></li>
-                    <li><a href="#recommendations">10. Рекомендации</a></li>
-                    <li><a href="#appendix">11. Приложение</a></li>
+                    <li><a href="#analysis">4. Анализ результатов</a></li>
+                    <li><a href="#personas">5. Персоны пользователей</a></li>
+                    <li><a href="#insights">6. Ключевые инсайты</a></li>
+                    <li><a href="#pain-points">7. Болевые точки пользователей</a></li>
+                    <li><a href="#user-needs">8. Потребности пользователей</a></li>
+                    <li><a href="#behavioral-patterns">9. Поведенческие паттерны</a></li>
+                    <li><a href="#emotional-journey">10. Эмоциональное путешествие</a></li>
+                    <li><a href="#contradictions">11. Противоречия в данных</a></li>
+                    <li><a href="#quotes">12. Значимые цитаты</a></li>
+                    <li><a href="#recommendations">13. Рекомендации</a></li>
+                    <li><a href="#appendix">14. Приложение</a></li>
                 </ul>
             </div>
             
@@ -527,28 +1402,6 @@ def generate_detailed_html_report(data):
             </div>
             ''' if brief_text else ''}
             
-            <!-- Ключевые метрики -->
-            <div class="section" id="metrics">
-                <h2>📈 Ключевые метрики</h2>
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <div class="metric-value">{transcripts_count}</div>
-                        <div class="metric-label">Количество интервью</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value">{len(all_transcripts.split())}</div>
-                        <div class="metric-label">Слов в транскриптах</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value">{total_chars // 1000}K</div>
-                        <div class="metric-label">Символов текста</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value">100%</div>
-                        <div class="metric-label">Покрытие анализа</div>
-                    </div>
-                </div>
-            </div>
             
             <!-- Анализ результатов -->
             <div class="section" id="analysis">
@@ -580,25 +1433,15 @@ def generate_detailed_html_report(data):
         <!-- Персоны пользователей -->
         <div class="section" id="personas">
             <h2>👥 Персоны пользователей</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin: 2rem 0;">
-                <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 2rem; border-radius: 16px; border-left: 6px solid #1e40af;">
-                    <h3 style="color: #1e40af; margin-bottom: 1rem; font-size: 1.4rem;">🎯 Основная целевая аудитория</h3>
-                    <p style="color: #374151; line-height: 1.6; margin-bottom: 1rem;">На основе анализа <strong>{transcript_analysis.get('total_words', 0):,}</strong> слов выявлены ключевые пользовательские сегменты.</p>
-                    <div style="background: white; padding: 1.5rem; border-radius: 12px; margin-top: 1rem;">
-                        <h4 style="color: #1e40af; margin-bottom: 0.5rem;">📊 Статистика сегментации</h4>
-                        <p style="color: #6b7280; font-size: 0.9rem; margin: 0.5rem 0;">Технических упоминаний: <strong>{transcript_analysis.get('tech_mentions', 0)}</strong></p>
-                        <p style="color: #6b7280; font-size: 0.9rem; margin: 0.5rem 0;">Индикаторов интервью: <strong>{transcript_analysis.get('interview_indicators', 0)}</strong></p>
-                    </div>
-                </div>
-                
-                <div style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); padding: 2rem; border-radius: 16px; border-left: 6px solid #dc2626;">
-                    <h3 style="color: #dc2626; margin-bottom: 1rem; font-size: 1.4rem;">⚠️ Проблемные сегменты</h3>
-                    <p style="color: #374151; line-height: 1.6; margin-bottom: 1rem;">Выявлено <strong>{transcript_analysis.get('problems_found', 0)}</strong> упоминаний проблемных моментов.</p>
-                    <div style="background: white; padding: 1.5rem; border-radius: 12px; margin-top: 1rem;">
-                        <h4 style="color: #dc2626; margin-bottom: 0.5rem;">🔍 Детализация проблем</h4>
-                        <p style="color: #6b7280; font-size: 0.9rem; margin: 0.5rem 0;">Плотность проблем: <strong>{transcript_analysis.get('problem_density', 0):.1f}</strong> на 1K слов</p>
-                        <p style="color: #6b7280; font-size: 0.9rem; margin: 0.5rem 0;">Конкретных паттернов: <strong>{len(transcript_analysis.get('specific_problems', []))}</strong></p>
-                    </div>
+            <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
+                <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem; font-size: 1.1rem;">
+                    На основе анализа <strong>{transcript_analysis.get('total_words', 0):,}</strong> слов и <strong>{transcripts_count}</strong> интервью 
+                    созданы детальные персоны пользователей, отражающие реальные потребности и поведение респондентов.
+                </p>
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #1e40af;">
+                    <p style="color: #6b7280; font-style: italic; margin: 0;">
+                        "Детальные персоны будут доступны после полного анализа через OpenRouter API с реальными данными из интервью"
+                    </p>
                 </div>
             </div>
         </div>
@@ -607,7 +1450,7 @@ def generate_detailed_html_report(data):
         <div class="section" id="insights">
             <h2>💡 Ключевые инсайты</h2>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; margin: 2rem 0;">
-                <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 2rem; border-radius: 16px; border-left: 6px solid #0ea5e9;">
+                <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; border-left: 6px solid #6b7280;">
                     <h3 style="color: #0ea5e9; margin-bottom: 1rem; font-size: 1.3rem;">👥 Пользовательское поведение</h3>
                     <p style="color: #374151; line-height: 1.6; margin-bottom: 1rem;">На основе анализа <strong>{transcript_analysis.get('total_words', 0):,}</strong> слов выявлены ключевые паттерны поведения пользователей.</p>
                     <div style="display: flex; gap: 1rem; margin-top: 1rem;">
@@ -620,7 +1463,7 @@ def generate_detailed_html_report(data):
                     </div>
                 </div>
                 
-                <div style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); padding: 2rem; border-radius: 16px; border-left: 6px solid #dc2626;">
+                <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; border-left: 6px solid #6b7280;">
                     <h3 style="color: #dc2626; margin-bottom: 1rem; font-size: 1.3rem;">⚠️ Болевые точки</h3>
                     <p style="color: #374151; line-height: 1.6; margin-bottom: 1rem;">Выявлено <strong>{transcript_analysis.get('problems_found', 0)}</strong> упоминаний проблемных моментов в транскриптах.</p>
                     <div style="background: white; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
@@ -628,7 +1471,7 @@ def generate_detailed_html_report(data):
                     </div>
                 </div>
                 
-                <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding: 2rem; border-radius: 16px; border-left: 6px solid #16a34a;">
+                <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; border-left: 6px solid #6b7280;">
                     <h3 style="color: #16a34a; margin-bottom: 1rem; font-size: 1.3rem;">🚀 Возможности улучшения</h3>
                     <p style="color: #374151; line-height: 1.6; margin-bottom: 1rem;">Соотношение положительных к отрицательным упоминаниям: <strong>{transcript_analysis.get('sentiment_ratio', 0):.1f}:1</strong></p>
                     <div style="background: white; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
@@ -640,28 +1483,79 @@ def generate_detailed_html_report(data):
             </div>
         </div>
 
-        <!-- Детальные проблемы -->
-        <div class="section" id="detailed-problems">
-            <h2>🔍 Детальные проблемы пользователей</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin: 2rem 0;">
-                <div style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); padding: 2rem; border-radius: 16px; border-left: 6px solid #dc2626;">
-                    <h3 style="color: #dc2626; margin-bottom: 1rem; font-size: 1.4rem;">⚠️ Выявленные проблемы</h3>
-                    <div style="background: white; padding: 1.5rem; border-radius: 12px; margin-top: 1rem;">
-                        <h4 style="color: #dc2626; margin-bottom: 1rem;">🔧 Конкретные паттерны проблем</h4>
-                        <ul style="color: #374151; line-height: 1.6; margin: 0; padding-left: 1.5rem;">
-                            {''.join([f'<li style="margin-bottom: 0.5rem;">{problem}</li>' for problem in transcript_analysis.get('specific_problems', [])]) if transcript_analysis.get('specific_problems') else '<li>Конкретные проблемы не выявлены</li>'}
-                        </ul>
-                    </div>
+        <!-- Болевые точки пользователей -->
+        <div class="section" id="pain-points">
+            <h2>⚠️ Болевые точки пользователей</h2>
+            <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
+                <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem; font-size: 1.1rem;">
+                    На основе анализа выявлены ключевые проблемы, с которыми сталкиваются пользователи при взаимодействии с продуктом.
+                </p>
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #dc2626;">
+                    <h4 style="color: #dc2626; margin-bottom: 1rem;">🔧 Конкретные паттерны проблем</h4>
+                    <ul style="color: #374151; line-height: 1.6; margin: 0; padding-left: 1.5rem;">
+                        {''.join([f'<li style="margin-bottom: 0.5rem;">{problem}</li>' for problem in transcript_analysis.get('specific_problems', [])]) if transcript_analysis.get('specific_problems') else '<li>Конкретные проблемы будут выявлены после полного анализа</li>'}
+                    </ul>
                 </div>
-                
-                <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 2rem; border-radius: 16px; border-left: 6px solid #0ea5e9;">
-                    <h3 style="color: #0ea5e9; margin-bottom: 1rem; font-size: 1.4rem;">✅ Положительные моменты</h3>
-                    <div style="background: white; padding: 1.5rem; border-radius: 12px; margin-top: 1rem;">
-                        <h4 style="color: #0ea5e9; margin-bottom: 1rem;">🌟 Выявленные преимущества</h4>
-                        <ul style="color: #374151; line-height: 1.6; margin: 0; padding-left: 1.5rem;">
-                            {''.join([f'<li style="margin-bottom: 0.5rem;">{moment}</li>' for moment in transcript_analysis.get('positive_moments', [])]) if transcript_analysis.get('positive_moments') else '<li>Положительные моменты не выявлены</li>'}
-                        </ul>
-                    </div>
+            </div>
+        </div>
+
+        <!-- Потребности пользователей -->
+        <div class="section" id="user-needs">
+            <h2>🎯 Потребности пользователей</h2>
+            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
+                <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem; font-size: 1.1rem;">
+                    Выявленные потребности пользователей на основе их высказываний и поведения в интервью.
+                </p>
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #0ea5e9;">
+                    <h4 style="color: #0ea5e9; margin-bottom: 1rem;">🌟 Выявленные преимущества</h4>
+                    <ul style="color: #374151; line-height: 1.6; margin: 0; padding-left: 1.5rem;">
+                        {''.join([f'<li style="margin-bottom: 0.5rem;">{moment}</li>' for moment in transcript_analysis.get('positive_moments', [])]) if transcript_analysis.get('positive_moments') else '<li>Потребности будут детализированы после полного анализа</li>'}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Поведенческие паттерны -->
+        <div class="section" id="behavioral-patterns">
+            <h2>🔄 Поведенческие паттерны</h2>
+            <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
+                <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem; font-size: 1.1rem;">
+                    Анализ поведения пользователей и выявленные паттерны взаимодействия с продуктом.
+                </p>
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #16a34a;">
+                    <p style="color: #6b7280; font-style: italic; margin: 0;">
+                        "Детальные поведенческие паттерны будут доступны после полного анализа через OpenRouter API"
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Эмоциональное путешествие -->
+        <div class="section" id="emotional-journey">
+            <h2>😊 Эмоциональное путешествие</h2>
+            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
+                <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem; font-size: 1.1rem;">
+                    Анализ эмоциональных состояний пользователей на разных этапах взаимодействия с продуктом.
+                </p>
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #f59e0b;">
+                    <p style="color: #6b7280; font-style: italic; margin: 0;">
+                        "Эмоциональное путешествие будет детализировано после полного анализа через OpenRouter API"
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Противоречия -->
+        <div class="section" id="contradictions">
+            <h2>⚖️ Противоречия в данных</h2>
+            <div style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
+                <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem; font-size: 1.1rem;">
+                    Выявленные противоречия и несоответствия в высказываниях пользователей.
+                </p>
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #8b5cf6;">
+                    <p style="color: #6b7280; font-style: italic; margin: 0;">
+                        "Противоречия будут выявлены после полного анализа через OpenRouter API"
+                    </p>
                 </div>
             </div>
         </div>
@@ -669,7 +1563,7 @@ def generate_detailed_html_report(data):
         <!-- Значимые цитаты -->
         <div class="section" id="quotes">
             <h2>💬 Значимые цитаты пользователей</h2>
-            <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
+            <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
                 <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem; font-size: 1.1rem;">
                     На основе анализа <strong>{transcript_analysis.get('total_words', 0):,}</strong> слов выделены наиболее показательные высказывания пользователей, 
                     отражающие их опыт взаимодействия с продуктом.
@@ -881,17 +1775,17 @@ st.markdown("""
     }
     
     .status-success {
-        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+        background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
         color: white;
     }
     
     .status-warning {
-        background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
         color: white;
     }
     
     .status-error {
-        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
         color: white;
     }
     
@@ -914,7 +1808,7 @@ st.markdown("""
     }
     
     .clear-button {
-        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
         color: white;
         border: none;
         padding: 0.75rem 1.5rem;
@@ -998,7 +1892,7 @@ st.markdown("""
     }
     
     .success-message {
-        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+        background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
         color: white;
         padding: 1rem 1.5rem;
         border-radius: 10px;
@@ -1007,7 +1901,7 @@ st.markdown("""
     }
     
     .error-message {
-        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
         color: white;
         padding: 1rem 1.5rem;
         border-radius: 10px;
@@ -1252,14 +2146,30 @@ with col3_2:
                 - Приведи примеры из разных интервью
 
                 2. ДЕТАЛЬНЫЕ ПЕРСОНЫ ПОЛЬЗОВАТЕЛЕЙ:
-                Создай 3-4 детальные персоны на основе интервью:
-                - Имя, возраст, профессия
-                - Цели и мотивации
-                - Болевые точки и фрустрации
-                - Поведенческие паттерны
-                - Цитаты, характеризующие персону
-                - Техническая грамотность
-                - Предпочтения в интерфейсах
+                Создай 3-4 УНИКАЛЬНЫЕ персоны на основе РЕАЛЬНЫХ данных интервью.
+                
+                КРИТИЧЕСКИ ВАЖНО:
+                1. Каждая персона = синтез 2-3 РЕАЛЬНЫХ респондентов
+                2. Используй ТОЛЬКО факты из интервью
+                3. НЕ придумывай детали - только из данных
+                4. Минимум 5 реальных цитат на персону
+                5. Связывай с целевой аудиторией брифа
+                
+                Структура каждой персоны:
+                - persona_id: "P001", "P002", etc.
+                - name: "Имя отражающее характер (НЕ реальное имя)"
+                - based_on_interviews: [номера интервью]
+                - tagline: "РЕАЛЬНАЯ цитата характеризующая персону"
+                - description: "Детальное описание ТОЛЬКО из данных респондентов"
+                - demographics: возраст, пол, профессия, локация, семейное положение, доход, образование
+                - real_life_context: жизненная ситуация, рабочая среда, ежедневные вызовы, социальный круг, типичный день
+                - personality_traits: черты выведенные из поведения
+                - goals: ТОЧНЫЕ цели из интервью
+                - frustrations: ТОЧНЫЕ фрустрации из данных
+                - needs: специфические потребности
+                - tech_behavior: устройства, приложения, технический комфорт, стиль обучения
+                - real_quotes: 5+ ПОЛНЫХ ТОЧНЫХ цитат (минимум 80 слов каждая)
+                - typical_scenario: РЕАЛЬНЫЙ сценарий из рассказов
 
                 3. КЛЮЧЕВЫЕ ПРОБЛЕМЫ:
                 - Список всех выявленных проблем с частотой упоминаний
@@ -1395,16 +2305,69 @@ with col3_2:
             """, unsafe_allow_html=True)
             
             # Показываем результаты
-            st.markdown("## 📊 Детальный отчет")
+            st.markdown("## 📊 Настройка отчета")
             
-            # Показываем HTML отчет
-            st.components.v1.html(html_report, height=800, scrolling=True)
+            # Выбор блоков для включения в отчет
+            st.markdown("### Выберите разделы для включения в отчет:")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                include_overview = st.checkbox("📊 Общий обзор", value=True)
+                include_brief = st.checkbox("📋 Бриф исследования", value=True)
+                include_brief_answers = st.checkbox("❓ Ответы на вопросы брифа", value=True)
+                include_analysis = st.checkbox("🔍 Анализ результатов", value=True)
+                include_personas = st.checkbox("👥 Персоны пользователей", value=True)
+                include_insights = st.checkbox("💡 Ключевые инсайты", value=True)
+                
+            with col2:
+                include_pain_points = st.checkbox("⚠️ Болевые точки", value=True)
+                include_user_needs = st.checkbox("🎯 Потребности пользователей", value=True)
+                include_behavioral = st.checkbox("🔄 Поведенческие паттерны", value=True)
+                include_emotional = st.checkbox("😊 Эмоциональное путешествие", value=True)
+                include_contradictions = st.checkbox("⚖️ Противоречия", value=True)
+                include_quotes = st.checkbox("💬 Значимые цитаты", value=True)
+                include_recommendations = st.checkbox("🎯 Рекомендации", value=True)
+                include_appendix = st.checkbox("📎 Приложение", value=True)
+            
+            # Генерируем отчет с выбранными блоками
+            if st.button("📄 Сгенерировать отчет", type="primary", use_container_width=True):
+                # Собираем выбранные разделы
+                selected_sections = {
+                    'overview': include_overview,
+                    'brief': include_brief,
+                    'brief_answers': include_brief_answers,
+                    'analysis': include_analysis,
+                    'personas': include_personas,
+                    'insights': include_insights,
+                    'pain_points': include_pain_points,
+                    'user_needs': include_user_needs,
+                    'behavioral': include_behavioral,
+                    'emotional': include_emotional,
+                    'contradictions': include_contradictions,
+                    'quotes': include_quotes,
+                    'recommendations': include_recommendations,
+                    'appendix': include_appendix
+                }
+                
+                # Генерируем кастомный отчет
+                custom_html_report = generate_custom_html_report(report_data, selected_sections)
+                
+                # Сохраняем в session_state
+                st.session_state['custom_html_report'] = custom_html_report
+                st.session_state['selected_sections'] = selected_sections
+                
+                st.success("✅ Отчет сгенерирован! Используйте кнопку скачивания ниже.")
             
             # Кнопка для скачивания HTML
-            if 'html_report' in st.session_state and st.session_state['html_report']:
+            if 'custom_html_report' in st.session_state and st.session_state['custom_html_report']:
                 try:
-                    html_data = st.session_state['html_report']
+                    html_data = st.session_state['custom_html_report']
                     if isinstance(html_data, str):
+                        # Показываем информацию о выбранных разделах
+                        selected_count = sum(1 for v in st.session_state.get('selected_sections', {}).values() if v)
+                        st.info(f"📊 Отчет содержит {selected_count} разделов из 14 доступных")
+                        
                         st.download_button(
                             label="📥 Скачать HTML отчет",
                             data=html_data.encode('utf-8'),
@@ -1417,7 +2380,7 @@ with col3_2:
                 except Exception as e:
                     st.error(f"Ошибка при создании кнопки скачивания: {str(e)}")
             else:
-                st.warning("HTML отчет недоступен для скачивания")
+                st.warning("Сначала сгенерируйте отчет, выбрав нужные разделы")
             
             # Информация о следующих шагах
             st.markdown("""

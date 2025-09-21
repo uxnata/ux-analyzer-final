@@ -4,6 +4,11 @@ import zipfile
 import xml.etree.ElementTree as ET
 from datetime import datetime
 import streamlit.components.v1 as components
+import sys
+import os
+
+# Добавляем текущую директорию в путь для импорта модулей
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Импорты наших классов
 from ux_analyzer_classes import CompanyConfig, BriefManager

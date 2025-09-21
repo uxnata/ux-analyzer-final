@@ -1980,418 +1980,278 @@ st.markdown("""
 col2_1, col2_2 = st.columns(2)
 
 with col2_1:
-    st.markdown("""
-    <div class="upload-area">
-        <div class="upload-icon">📄</div>
-        <div class="upload-text">Загрузите транскрипты интервью</div>
-    </div>
-    """, unsafe_allow_html=True)
-    
     uploaded_files = st.file_uploader(
-        "Выберите файлы с транскриптами",
+        "📄 Транскрипты интервью",
         type=['txt', 'md', 'docx', 'doc'],
         accept_multiple_files=True,
-        help="Поддерживаемые форматы: .txt, .md, .docx, .doc",
-        label_visibility="collapsed"
+        help="Поддерживаемые форматы: .txt, .md, .docx, .doc"
     )
     
     if uploaded_files:
-        st.markdown(f"""
-        <div class="success-message">
-            ✅ Загружено {len(uploaded_files)} файлов
-        </div>
-        """, unsafe_allow_html=True)
-        
+        st.success(f"✅ Загружено {len(uploaded_files)} файлов")
         for file in uploaded_files:
-            st.markdown(f"""
-            <div class="file-item">
-                📄 {file.name} ({(file.size / 1024):.1f} KB)
-            </div>
-            """, unsafe_allow_html=True)
+            st.info(f"📄 {file.name} ({(file.size / 1024):.1f} KB)")
 
 with col2_2:
-    st.markdown("""
-    <div class="upload-area">
-        <div class="upload-icon">📋</div>
-        <div class="upload-text">Загрузите бриф исследования (опционально)</div>
-    </div>
-    """, unsafe_allow_html=True)
-    
     uploaded_brief = st.file_uploader(
-        "Выберите файл с брифом",
+        "📋 Бриф исследования (опционально)",
         type=['txt', 'md', 'docx', 'doc'],
-        help="Бриф с целями исследования",
-        label_visibility="collapsed"
+        help="Бриф с целями исследования"
     )
     
     if uploaded_brief:
-        st.markdown(f"""
-        <div class="success-message">
-            ✅ Бриф загружен
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown(f"""
-        <div class="file-item">
-            📋 {uploaded_brief.name} ({(uploaded_brief.size / 1024):.1f} KB)
-        </div>
-        """, unsafe_allow_html=True)
-
-# Этап 3: Анализ
-st.markdown("""
-<div class="step-card">
-    <div class="step-header">
-        <div class="step-number">3</div>
-        <div>
-            <div class="step-title">🚀 Запуск анализа</div>
-            <div class="step-description">Запустите анализ данных и получите детальный отчет</div>
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+        st.success("✅ Бриф загружен")
+        st.info(f"📋 {uploaded_brief.name} ({(uploaded_brief.size / 1024):.1f} KB)")
 
 # Кнопка анализа
-col3_1, col3_2, col3_3 = st.columns([1, 2, 1])
-
-with col3_2:
-    if st.button("🚀 Начать анализ", type="primary", disabled=not (uploaded_files and api_key), use_container_width=True):
-        if not api_key:
-            st.markdown("""
-            <div class="error-message">
-                ❌ Введите API ключ!
-            </div>
-            """, unsafe_allow_html=True)
-        elif not uploaded_files:
-            st.markdown("""
-            <div class="error-message">
-                ❌ Загрузите транскрипты!
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            # Показываем загрузку
-            st.markdown("""
-            <div class="progress-container">
-                <div style="text-align: center; margin-bottom: 1rem;">
-                    <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">🔧 Настройка Claude 3.5 Sonnet...</div>
-                </div>
-                <div class="progress-bar" style="width: 20%;"></div>
-            </div>
-            """, unsafe_allow_html=True)
+if st.button("🚀 Генерация отчета", type="primary", disabled=not (uploaded_files and api_key), use_container_width=True):
+    if not api_key:
+        st.error("❌ Введите API ключ!")
+    elif not uploaded_files:
+        st.error("❌ Загрузите транскрипты!")
+    else:
+        # Простая проверка API ключа
+        if not api_key.startswith("sk-or-v1-"):
+            st.error("⚠️ Проверьте формат API ключа")
+            st.stop()
+        
+        # Читаем транскрипты
+        transcripts = []
+        for file in uploaded_files:
+            content = read_file_content(file)
+            transcripts.append(content)
+        
+        # Реальный анализ через OpenRouter API
+        try:
+            import requests
             
-            # Простая проверка API ключа
-            if api_key.startswith("sk-or-v1-"):
-                st.markdown("""
-                <div class="success-message">
-                    ✅ API ключ валидный
-                </div>
-                """, unsafe_allow_html=True)
-            else:
-                st.markdown("""
-                <div class="error-message">
-                    ⚠️ Проверьте формат API ключа
-                </div>
-                """, unsafe_allow_html=True)
+            # Подготавливаем данные для анализа
+            all_transcripts = "\n\n".join(transcripts)
+            brief_text = ""
+            if uploaded_brief:
+                brief_text = read_file_content(uploaded_brief)
             
-            # Продолжение анализа...
-            st.markdown("""
-            <div class="progress-container">
-                <div style="text-align: center; margin-bottom: 1rem;">
-                    <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">🔬 Запуск анализа...</div>
-                </div>
-                <div class="progress-bar" style="width: 40%;"></div>
-            </div>
-            """, unsafe_allow_html=True)
+            # Формируем детальный запрос к OpenRouter для анализа
+            brief_prompt = f"""
+Ты - эксперт по UX-исследованиям с 10+ летним опытом. Проанализируй следующие данные пользовательских интервью и создай максимально подробный отчет.
+
+БРИФ ИССЛЕДОВАНИЯ:
+{brief_text if brief_text else "Бриф не предоставлен"}
+
+ТРАНСКРИПТЫ ИНТЕРВЬЮ:
+{all_transcripts[:12000]}
+
+ЗАДАЧИ АНАЛИЗА:
+
+1. ОТВЕТЫ НА ВОПРОСЫ БРИФА:
+- Ответь на каждый вопрос из брифа максимально подробно
+- Используй конкретные цитаты из интервью для подтверждения каждого вывода
+- Укажи, сколько раз упоминалась каждая проблема/особенность
+- Приведи примеры из разных интервью
+
+2. ДЕТАЛЬНЫЕ ПЕРСОНЫ ПОЛЬЗОВАТЕЛЕЙ:
+Создай 3-4 УНИКАЛЬНЫЕ персоны на основе РЕАЛЬНЫХ данных интервью.
+
+КРИТИЧЕСКИ ВАЖНО:
+1. Каждая персона = синтез 2-3 РЕАЛЬНЫХ респондентов
+2. Используй ТОЛЬКО факты из интервью
+3. НЕ придумывай детали - только из данных
+4. Минимум 5 реальных цитат на персону
+5. Связывай с целевой аудиторией брифа
+
+Структура каждой персоны:
+- persona_id: "P001", "P002", etc.
+- name: "Имя отражающее характер (НЕ реальное имя)"
+- based_on_interviews: [номера интервью]
+- tagline: "РЕАЛЬНАЯ цитата характеризующая персону"
+- description: "Детальное описание ТОЛЬКО из данных респондентов"
+- demographics: возраст, пол, профессия, локация, семейное положение, доход, образование
+- real_life_context: жизненная ситуация, рабочая среда, ежедневные вызовы, социальный круг, типичный день
+- personality_traits: черты выведенные из поведения
+- goals: ТОЧНЫЕ цели из интервью
+- frustrations: ТОЧНЫЕ фрустрации из данных
+- needs: специфические потребности
+- tech_behavior: устройства, приложения, технический комфорт, стиль обучения
+- real_quotes: 5+ ПОЛНЫХ ТОЧНЫХ цитат (минимум 80 слов каждая)
+- typical_scenario: РЕАЛЬНЫЙ сценарий из рассказов
+
+3. КЛЮЧЕВЫЕ ПРОБЛЕМЫ:
+- Список всех выявленных проблем с частотой упоминаний
+- Критичность каждой проблемы (1-5)
+- Влияние на пользовательский опыт
+- Конкретные цитаты для каждой проблемы
+
+4. ПОТРЕБНОСТИ ПОЛЬЗОВАТЕЛЕЙ:
+- Явные потребности (что говорят пользователи)
+- Скрытые потребности (что можно вывести из поведения)
+- Приоритизация потребностей
+- Связь потребностей с проблемами
+
+5. РЕКОМЕНДАЦИИ:
+- Конкретные действия для решения каждой проблемы
+- Приоритизация рекомендаций
+- Ожидаемый эффект от внедрения
+
+6. ЗНАЧИМЫЕ ЦИТАТЫ:
+- 10-15 самых показательных цитат
+- Контекст каждой цитаты
+- К какой проблеме/потребности относится
+
+СТРУКТУРА ОТВЕТА:
+Начни с краткого резюме (2-3 предложения), затем подробно раскрой каждый пункт.
+Используй заголовки и подзаголовки для структурирования.
+Отчет должен быть на русском языке.
+"""
             
-            # Читаем транскрипты
-            transcripts = []
-            for file in uploaded_files:
-                content = read_file_content(file)
-                transcripts.append(content)
+            # Отправляем запрос к OpenRouter
+            response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "anthropic/claude-3.5-sonnet",
+                    "messages": [
+                        {"role": "user", "content": brief_prompt}
+                    ],
+                    "max_tokens": 6000,
+                    "temperature": 0.7
+                }
+            )
             
-            st.markdown("""
-            <div class="progress-container">
-                <div style="text-align: center; margin-bottom: 1rem;">
-                    <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">📊 Обработка данных...</div>
-                </div>
-                <div class="progress-bar" style="width: 60%;"></div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Реальный анализ через OpenRouter API
-            try:
-                import requests
-                
-                # Подготавливаем данные для анализа
-                all_transcripts = "\n\n".join(transcripts)
-                brief_text = ""
-                if uploaded_brief:
-                    brief_text = read_file_content(uploaded_brief)
-                
-                # Формируем детальный запрос к OpenRouter для анализа
-                brief_prompt = f"""
-                Ты - эксперт по UX-исследованиям с 10+ летним опытом. Проанализируй следующие данные пользовательских интервью и создай максимально подробный отчет.
-
-                БРИФ ИССЛЕДОВАНИЯ:
-                {brief_text if brief_text else "Бриф не предоставлен"}
-
-                ТРАНСКРИПТЫ ИНТЕРВЬЮ:
-                {all_transcripts[:12000]}
-
-                ЗАДАЧИ АНАЛИЗА:
-
-                1. ОТВЕТЫ НА ВОПРОСЫ БРИФА:
-                - Ответь на каждый вопрос из брифа максимально подробно
-                - Используй конкретные цитаты из интервью для подтверждения каждого вывода
-                - Укажи, сколько раз упоминалась каждая проблема/особенность
-                - Приведи примеры из разных интервью
-
-                2. ДЕТАЛЬНЫЕ ПЕРСОНЫ ПОЛЬЗОВАТЕЛЕЙ:
-                Создай 3-4 УНИКАЛЬНЫЕ персоны на основе РЕАЛЬНЫХ данных интервью.
-                
-                КРИТИЧЕСКИ ВАЖНО:
-                1. Каждая персона = синтез 2-3 РЕАЛЬНЫХ респондентов
-                2. Используй ТОЛЬКО факты из интервью
-                3. НЕ придумывай детали - только из данных
-                4. Минимум 5 реальных цитат на персону
-                5. Связывай с целевой аудиторией брифа
-                
-                Структура каждой персоны:
-                - persona_id: "P001", "P002", etc.
-                - name: "Имя отражающее характер (НЕ реальное имя)"
-                - based_on_interviews: [номера интервью]
-                - tagline: "РЕАЛЬНАЯ цитата характеризующая персону"
-                - description: "Детальное описание ТОЛЬКО из данных респондентов"
-                - demographics: возраст, пол, профессия, локация, семейное положение, доход, образование
-                - real_life_context: жизненная ситуация, рабочая среда, ежедневные вызовы, социальный круг, типичный день
-                - personality_traits: черты выведенные из поведения
-                - goals: ТОЧНЫЕ цели из интервью
-                - frustrations: ТОЧНЫЕ фрустрации из данных
-                - needs: специфические потребности
-                - tech_behavior: устройства, приложения, технический комфорт, стиль обучения
-                - real_quotes: 5+ ПОЛНЫХ ТОЧНЫХ цитат (минимум 80 слов каждая)
-                - typical_scenario: РЕАЛЬНЫЙ сценарий из рассказов
-
-                3. КЛЮЧЕВЫЕ ПРОБЛЕМЫ:
-                - Список всех выявленных проблем с частотой упоминаний
-                - Критичность каждой проблемы (1-5)
-                - Влияние на пользовательский опыт
-                - Конкретные цитаты для каждой проблемы
-
-                4. ПОТРЕБНОСТИ ПОЛЬЗОВАТЕЛЕЙ:
-                - Явные потребности (что говорят пользователи)
-                - Скрытые потребности (что можно вывести из поведения)
-                - Приоритизация потребностей
-                - Связь потребностей с проблемами
-
-                5. РЕКОМЕНДАЦИИ:
-                - Конкретные действия для решения каждой проблемы
-                - Приоритизация рекомендаций
-                - Ожидаемый эффект от внедрения
-
-                6. ЗНАЧИМЫЕ ЦИТАТЫ:
-                - 10-15 самых показательных цитат
-                - Контекст каждой цитаты
-                - К какой проблеме/потребности относится
-
-                СТРУКТУРА ОТВЕТА:
-                Начни с краткого резюме (2-3 предложения), затем подробно раскрой каждый пункт.
-                Используй заголовки и подзаголовки для структурирования.
-                Отчет должен быть на русском языке.
-                """
-                
-                # Отправляем запрос к OpenRouter
-                response = requests.post(
-                    "https://openrouter.ai/api/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {api_key}",
-                        "Content-Type": "application/json"
-                    },
-                    json={
-                        "model": "anthropic/claude-3.5-sonnet",
-                        "messages": [
-                            {"role": "user", "content": brief_prompt}
-                        ],
-                        "max_tokens": 6000,
-                        "temperature": 0.7
-                    }
-                )
-                
-                if response.status_code != 200:
-                    if response.status_code == 401:
-                        st.markdown("""
-                        <div class="error-message">
-                            ❌ Неверный API ключ! Проверьте ключ в настройках.
-                        </div>
-                        """, unsafe_allow_html=True)
-                    elif response.status_code == 429:
-                        st.markdown("""
-                        <div class="error-message">
-                            ❌ Превышен лимит запросов. Попробуйте позже.
-                        </div>
-                        """, unsafe_allow_html=True)
-                    else:
-                        st.markdown(f"""
-                        <div class="error-message">
-                            ❌ Ошибка API: {response.status_code}
-                        </div>
-                        """, unsafe_allow_html=True)
-                
-                if response.status_code == 200:
-                    analysis_result = response.json()["choices"][0]["message"]["content"]
-                    st.markdown("""
-                    <div class="success-message">
-                        ✅ Анализ выполнен через OpenRouter API!
-                    </div>
-                    """, unsafe_allow_html=True)
+            if response.status_code != 200:
+                if response.status_code == 401:
+                    st.error("❌ Неверный API ключ! Проверьте ключ в настройках.")
+                elif response.status_code == 429:
+                    st.error("❌ Превышен лимит запросов. Попробуйте позже.")
                 else:
-                    analysis_result = f"Ошибка API: {response.status_code} - {response.text}"
-                    st.markdown("""
-                    <div class="error-message">
-                        ⚠️ Ошибка при обращении к API
-                    </div>
-                    """, unsafe_allow_html=True)
+                    st.error(f"❌ Ошибка API: {response.status_code}")
             
-            except Exception as e:
-                analysis_result = f"Ошибка анализа: {str(e)}"
-                st.markdown(f"""
-                <div class="error-message">
-                    ❌ Ошибка: {e}
-                </div>
-                """, unsafe_allow_html=True)
+            if response.status_code == 200:
+                analysis_result = response.json()["choices"][0]["message"]["content"]
+                st.success("✅ Анализ выполнен через OpenRouter API!")
+            else:
+                analysis_result = f"Ошибка API: {response.status_code} - {response.text}"
+                st.error("⚠️ Ошибка при обращении к API")
             
-            # Генерация отчета
-            st.markdown("""
-            <div class="progress-container">
-                <div style="text-align: center; margin-bottom: 1rem;">
-                    <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">📋 Генерация детального отчета...</div>
-                </div>
-                <div class="progress-bar" style="width: 90%;"></div>
-            </div>
-            """, unsafe_allow_html=True)
+        except Exception as e:
+            analysis_result = f"Ошибка анализа: {str(e)}"
+            st.error(f"❌ Ошибка: {e}")
+        
+        # Создаем структурированные данные для отчета
+        report_data = {
+            "company": company_name,
+            "report_title": report_title,
+            "author": author,
+            "transcripts_count": len(transcripts),
+            "brief_uploaded": uploaded_brief is not None,
+            "status": "Анализ завершен успешно",
+            "analysis_result": analysis_result,
+            "all_transcripts": all_transcripts,
+            "brief_text": brief_text,
+            "total_chars": len(all_transcripts)
+        }
+        
+        # Генерируем полный HTML отчет
+        html_report = generate_detailed_html_report(report_data)
+        
+        # Сохраняем отчет в session_state для скачивания
+        st.session_state['html_report'] = html_report
+        
+        st.success("🎉 Анализ успешно завершен!")
+        
+        # Сохраняем данные отчета в session_state
+        st.session_state['report_data'] = report_data
+        
+        # Показываем результаты
+        st.markdown("## 📊 Настройка отчета")
+        
+        # Выбор блоков для включения в отчет
+        st.markdown("### Выберите разделы для включения в отчет:")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            include_overview = st.checkbox("📊 Общий обзор", value=True)
+            include_brief = st.checkbox("📋 Бриф исследования", value=True)
+            include_brief_answers = st.checkbox("❓ Ответы на вопросы брифа", value=True)
+            include_analysis = st.checkbox("🔍 Анализ результатов", value=True)
+            include_personas = st.checkbox("👥 Персоны пользователей", value=True)
+            include_insights = st.checkbox("💡 Ключевые инсайты", value=True)
             
-            # Создаем структурированные данные для отчета
-            report_data = {
-                "company": company_name,
-                "report_title": report_title,
-                "author": author,
-                "transcripts_count": len(transcripts),
-                "brief_uploaded": uploaded_brief is not None,
-                "status": "Анализ завершен успешно",
-                "analysis_result": analysis_result,
-                "all_transcripts": all_transcripts,
-                "brief_text": brief_text,
-                "total_chars": len(all_transcripts)
+        with col2:
+            include_pain_points = st.checkbox("⚠️ Болевые точки", value=True)
+            include_user_needs = st.checkbox("🎯 Потребности пользователей", value=True)
+            include_behavioral = st.checkbox("🔄 Поведенческие паттерны", value=True)
+            include_emotional = st.checkbox("😊 Эмоциональное путешествие", value=True)
+            include_contradictions = st.checkbox("⚖️ Противоречия", value=True)
+            include_quotes = st.checkbox("💬 Значимые цитаты", value=True)
+            include_recommendations = st.checkbox("🎯 Рекомендации", value=True)
+            include_appendix = st.checkbox("📎 Приложение", value=True)
+        
+        # Генерируем отчет с выбранными блоками
+        if st.button("📄 Сгенерировать отчет", type="primary", use_container_width=True):
+            # Собираем выбранные разделы
+            selected_sections = {
+                'overview': include_overview,
+                'brief': include_brief,
+                'brief_answers': include_brief_answers,
+                'analysis': include_analysis,
+                'personas': include_personas,
+                'insights': include_insights,
+                'pain_points': include_pain_points,
+                'user_needs': include_user_needs,
+                'behavioral': include_behavioral,
+                'emotional': include_emotional,
+                'contradictions': include_contradictions,
+                'quotes': include_quotes,
+                'recommendations': include_recommendations,
+                'appendix': include_appendix
             }
             
-            # Генерируем полный HTML отчет
-            html_report = generate_detailed_html_report(report_data)
+            # Генерируем кастомный отчет
+            custom_html_report = generate_custom_html_report(st.session_state['report_data'], selected_sections)
             
-            # Сохраняем отчет в session_state для скачивания
-            st.session_state['html_report'] = html_report
+            # Сохраняем в session_state
+            st.session_state['custom_html_report'] = custom_html_report
+            st.session_state['selected_sections'] = selected_sections
             
-            st.markdown("""
-            <div class="progress-container">
-                <div style="text-align: center; margin-bottom: 1rem;">
-                    <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">✅ Анализ завершен!</div>
-                </div>
-                <div class="progress-bar" style="width: 100%;"></div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
-            <div class="success-message">
-                🎉 Анализ успешно завершен!
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Показываем результаты
-            st.markdown("## 📊 Настройка отчета")
-            
-            # Выбор блоков для включения в отчет
-            st.markdown("### Выберите разделы для включения в отчет:")
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                include_overview = st.checkbox("📊 Общий обзор", value=True)
-                include_brief = st.checkbox("📋 Бриф исследования", value=True)
-                include_brief_answers = st.checkbox("❓ Ответы на вопросы брифа", value=True)
-                include_analysis = st.checkbox("🔍 Анализ результатов", value=True)
-                include_personas = st.checkbox("👥 Персоны пользователей", value=True)
-                include_insights = st.checkbox("💡 Ключевые инсайты", value=True)
-                
-            with col2:
-                include_pain_points = st.checkbox("⚠️ Болевые точки", value=True)
-                include_user_needs = st.checkbox("🎯 Потребности пользователей", value=True)
-                include_behavioral = st.checkbox("🔄 Поведенческие паттерны", value=True)
-                include_emotional = st.checkbox("😊 Эмоциональное путешествие", value=True)
-                include_contradictions = st.checkbox("⚖️ Противоречия", value=True)
-                include_quotes = st.checkbox("💬 Значимые цитаты", value=True)
-                include_recommendations = st.checkbox("🎯 Рекомендации", value=True)
-                include_appendix = st.checkbox("📎 Приложение", value=True)
-            
-            # Генерируем отчет с выбранными блоками
-            if st.button("📄 Сгенерировать отчет", type="primary", use_container_width=True):
-                # Собираем выбранные разделы
-                selected_sections = {
-                    'overview': include_overview,
-                    'brief': include_brief,
-                    'brief_answers': include_brief_answers,
-                    'analysis': include_analysis,
-                    'personas': include_personas,
-                    'insights': include_insights,
-                    'pain_points': include_pain_points,
-                    'user_needs': include_user_needs,
-                    'behavioral': include_behavioral,
-                    'emotional': include_emotional,
-                    'contradictions': include_contradictions,
-                    'quotes': include_quotes,
-                    'recommendations': include_recommendations,
-                    'appendix': include_appendix
-                }
-                
-                # Генерируем кастомный отчет
-                custom_html_report = generate_custom_html_report(report_data, selected_sections)
-                
-                # Сохраняем в session_state
-                st.session_state['custom_html_report'] = custom_html_report
-                st.session_state['selected_sections'] = selected_sections
-                
-                st.success("✅ Отчет сгенерирован! Используйте кнопку скачивания ниже.")
-            
-            # Кнопка для скачивания HTML
-            if 'custom_html_report' in st.session_state and st.session_state['custom_html_report']:
-                try:
-                    html_data = st.session_state['custom_html_report']
-                    if isinstance(html_data, str):
-                        # Показываем информацию о выбранных разделах
-                        selected_count = sum(1 for v in st.session_state.get('selected_sections', {}).values() if v)
-                        st.info(f"📊 Отчет содержит {selected_count} разделов из 14 доступных")
-                        
-                        st.download_button(
-                            label="📥 Скачать HTML отчет",
-                            data=html_data.encode('utf-8'),
-                            file_name=f"ux_report_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
-                            mime="text/html",
-                            use_container_width=True
-                        )
-                    else:
-                        st.error("Ошибка: HTML отчет имеет неверный формат")
-                except Exception as e:
-                    st.error(f"Ошибка при создании кнопки скачивания: {str(e)}")
-            else:
-                st.warning("Сначала сгенерируйте отчет, выбрав нужные разделы")
-            
-            # Информация о следующих шагах
-            st.markdown("""
-            <div class="info-card">
-                <h3>🎯 Результат анализа</h3>
-                <p>• Анализ выполнен через Claude 3.5 Sonnet</p>
-                <p>• Сгенерирован детальный HTML отчет</p>
-                <p>• Ответы основаны на реальных транскриптах интервью</p>
-                <p>• Цитаты взяты из интервью</p>
-            </div>
-            """, unsafe_allow_html=True)
+            st.success("✅ Отчет сгенерирован! Используйте кнопку скачивания ниже.")
+        
+        # Кнопка для скачивания HTML
+        if 'custom_html_report' in st.session_state and st.session_state['custom_html_report']:
+            try:
+                html_data = st.session_state['custom_html_report']
+                if isinstance(html_data, str):
+                    # Показываем информацию о выбранных разделах
+                    selected_count = sum(1 for v in st.session_state.get('selected_sections', {}).values() if v)
+                    st.info(f"📊 Отчет содержит {selected_count} разделов из 14 доступных")
+                    
+                    st.download_button(
+                        label="📥 Скачать HTML отчет",
+                        data=html_data.encode('utf-8'),
+                        file_name=f"ux_report_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
+                        mime="text/html",
+                        use_container_width=True
+                    )
+                else:
+                    st.error("Ошибка: HTML отчет имеет неверный формат")
+            except Exception as e:
+                st.error(f"Ошибка при создании кнопки скачивания: {str(e)}")
+        else:
+            st.warning("Сначала сгенерируйте отчет, выбрав нужные разделы")
+        
+        # Информация о следующих шагах
+        st.markdown("""
+        <div class="info-card">
+            <h3>🎯 Результат анализа</h3>
+            <p>• Анализ выполнен через Claude 3.5 Sonnet</p>
+            <p>• Сгенерирован детальный HTML отчет</p>
+            <p>• Ответы основаны на реальных транскриптах интервью</p>
+            <p>• Цитаты взяты из интервью</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 # Кнопка очистки внизу
 st.markdown("---")

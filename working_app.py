@@ -1,4 +1,38 @@
 import streamlit as st
+import io
+import zipfile
+import xml.etree.ElementTree as ET
+
+def read_docx(file):
+    """Читает содержимое .docx файла"""
+    try:
+        # .docx файл - это zip архив
+        with zipfile.ZipFile(file) as docx:
+            # Читаем основной документ
+            content = docx.read('word/document.xml')
+            root = ET.fromstring(content)
+            
+            # Извлекаем текст из всех параграфов
+            text = []
+            for paragraph in root.iter():
+                if paragraph.text:
+                    text.append(paragraph.text)
+            
+            return ' '.join(text)
+    except Exception as e:
+        st.error(f"Ошибка чтения .docx файла: {e}")
+        return ""
+
+def read_file_content(file):
+    """Читает содержимое файла в зависимости от его типа"""
+    if file.name.endswith('.docx'):
+        return read_docx(file)
+    elif file.name.endswith('.doc'):
+        # Для .doc файлов пока возвращаем заглушку
+        return f"[Содержимое .doc файла: {file.name}]"
+    else:
+        # Для .txt и .md файлов
+        return file.read().decode('utf-8')
 
 # Настройка страницы
 st.set_page_config(
@@ -52,16 +86,16 @@ col1, col2 = st.columns(2)
 with col1:
     uploaded_files = st.file_uploader(
         "Загрузите транскрипты",
-        type=['txt', 'md'],
+        type=['txt', 'md', 'docx', 'doc'],
         accept_multiple_files=True,
-        help="Выберите файлы с транскриптами интервью"
+        help="Выберите файлы с транскриптами интервью (.txt, .md, .docx, .doc)"
     )
 
 with col2:
     uploaded_brief = st.file_uploader(
         "Загрузите бриф (опционально)",
-        type=['txt', 'md'],
-        help="Бриф с целями исследования"
+        type=['txt', 'md', 'docx', 'doc'],
+        help="Бриф с целями исследования (.txt, .md, .docx, .doc)"
     )
 
 # Обработка загруженных файлов
@@ -103,7 +137,7 @@ if st.button("🚀 Начать анализ", type="primary", disabled=not uplo
             # Читаем транскрипты
             transcripts = []
             for file in uploaded_files:
-                content = file.read().decode('utf-8')
+                content = read_file_content(file)
                 transcripts.append(content)
             
             status_text.text("📊 Обработка данных...")

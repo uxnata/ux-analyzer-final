@@ -100,11 +100,15 @@ if st.button("🚀 Начать анализ", type="primary", disabled=not uplo
             status_text.text("🔧 Загрузка анализатора...")
             progress_bar.progress(10)
             
-            # Читаем файл анализатора
-            with open('fux_ipynb_.py', 'r', encoding='utf-8') as f:
-                analyzer_code = f.read()
+            # Импортируем необходимые библиотеки
+            try:
+                import google.generativeai as genai
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel('gemini-pro')
+            except Exception as e:
+                st.error(f"❌ Ошибка настройки Gemini: {e}")
+                return
             
-            # Выполняем код анализатора
             status_text.text("🔬 Запуск анализа...")
             progress_bar.progress(30)
             

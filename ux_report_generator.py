@@ -679,7 +679,7 @@ class EnhancedReportGenerator:
                 {quotes_html}
                 <div style="margin-top: 20px; display: flex; gap: 15px;">
                     <span class="tag priority-{insight.get('severity', 'medium')}">
-                        {insight.get('severity', 'medium').upper()}
+                        {str(insight.get('severity', 'medium')).upper()}
                     </span>
                     {f'<span class="tag">Затронуто: {insight.get("affected_percentage", "")}</span>' if insight.get('affected_percentage') else ''}
                 </div>
@@ -744,7 +744,7 @@ class EnhancedReportGenerator:
                 <p>{pattern.get('description', '')}</p>
                 <div style="margin-top: 15px;">
                     <span class="tag">Частота: {pattern.get('frequency', 0)}</span>
-                    <span class="tag">Серьезность: {pattern.get('severity', 0)}/10</span>
+                    <span class="tag">Серьезность: {str(pattern.get('severity', 0))}/10</span>
                 </div>
             </div>
             """
@@ -818,7 +818,7 @@ class EnhancedReportGenerator:
                         })
 
         # Сортируем по важности
-        all_quotes.sort(key=lambda x: x.get('importance', 0), reverse=True)
+        all_quotes.sort(key=lambda x: int(x.get('importance', 0)) if isinstance(x.get('importance', 0), (int, float)) else 0, reverse=True)
 
         quotes_html = ""
         for quote in all_quotes[:10]:

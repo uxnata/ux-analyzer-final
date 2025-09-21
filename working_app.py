@@ -608,260 +608,674 @@ def generate_detailed_html_report(data):
 st.set_page_config(
     page_title="UX Анализатор V24.0",
     page_icon="🔬",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# Заголовок
-st.title("🔬 UX Анализатор V24.0")
-st.markdown("Профессиональный анализ транскриптов пользовательских интервью с использованием Claude 3.5 Sonnet")
-st.markdown("---")
+# Кастомные стили
+st.markdown("""
+<style>
+    /* Основные стили */
+    .main-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem 1rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .main-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .main-header p {
+        font-size: 1.2rem;
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+    }
+    
+    .step-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        border: 1px solid #e1e5e9;
+        transition: all 0.3s ease;
+    }
+    
+    .step-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+    }
+    
+    .step-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f2f6;
+    }
+    
+    .step-number {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-right: 1rem;
+    }
+    
+    .step-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0;
+    }
+    
+    .step-description {
+        color: #718096;
+        font-size: 1rem;
+        margin: 0.5rem 0 0 0;
+    }
+    
+    .upload-area {
+        border: 3px dashed #cbd5e0;
+        border-radius: 15px;
+        padding: 3rem 2rem;
+        text-align: center;
+        background: #f7fafc;
+        transition: all 0.3s ease;
+        margin: 1rem 0;
+    }
+    
+    .upload-area:hover {
+        border-color: #667eea;
+        background: #edf2f7;
+    }
+    
+    .upload-icon {
+        font-size: 3rem;
+        color: #a0aec0;
+        margin-bottom: 1rem;
+    }
+    
+    .upload-text {
+        font-size: 1.1rem;
+        color: #4a5568;
+        font-weight: 500;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin: 0.25rem;
+    }
+    
+    .status-success {
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        color: white;
+    }
+    
+    .status-warning {
+        background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+        color: white;
+    }
+    
+    .status-error {
+        background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        color: white;
+    }
+    
+    .action-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 15px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .action-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+    }
+    
+    .clear-button {
+        background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(245, 101, 101, 0.4);
+    }
+    
+    .clear-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(245, 101, 101, 0.6);
+    }
+    
+    .info-card {
+        background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 2rem 0;
+        border-left: 5px solid #667eea;
+    }
+    
+    .metric-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        border: 1px solid #e1e5e9;
+        transition: all 0.3s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+    
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+    
+    .metric-label {
+        color: #718096;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+    
+    .sidebar-content {
+        background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .file-item {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border-left: 4px solid #667eea;
+    }
+    
+    .progress-container {
+        background: #f7fafc;
+        border-radius: 10px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .progress-bar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        height: 8px;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+    
+    .success-message {
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        margin: 1rem 0;
+        font-weight: 600;
+    }
+    
+    .error-message {
+        background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        margin: 1rem 0;
+        font-weight: 600;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# Этапы работы
-st.header("🚀 Этапы работы")
+# Главный заголовок
+st.markdown("""
+<div class="main-header">
+    <h1>🔬 UX Анализатор V24.0</h1>
+    <p>Профессиональный анализ транскриптов пользовательских интервью с использованием Claude 3.5 Sonnet</p>
+</div>
+""", unsafe_allow_html=True)
 
-# Создаем контейнер для этапов
-step_container = st.container()
+# Основной контент
+col1, col2 = st.columns([2, 1])
 
-with step_container:
+with col1:
     # Этап 1: Настройки
-    with st.expander("1️⃣ Настройки и конфигурация", expanded=True):
-        st.markdown("**Настройте параметры анализа и введите API ключ**")
+    st.markdown("""
+    <div class="step-card">
+        <div class="step-header">
+            <div class="step-number">1</div>
+            <div>
+                <div class="step-title">⚙️ Настройки и конфигурация</div>
+                <div class="step-description">Настройте параметры анализа и введите API ключ</div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Настройки в карточке
+    with st.container():
+        col1_1, col1_2 = st.columns(2)
         
-        col1, col2 = st.columns(2)
-        
-        with col1:
+        with col1_1:
             api_key = st.text_input(
-                "OpenRouter API Key",
+                "🔑 OpenRouter API Key",
                 type="password",
                 placeholder="Введите ваш OpenRouter API ключ",
                 help="API ключ для OpenRouter"
             )
             
             company_name = st.text_input(
-                "Название компании",
+                "🏢 Название компании",
                 value="Company",
                 placeholder="Название компании"
             )
 
-        with col2:
+        with col1_2:
             report_title = st.text_input(
-                "Название отчета",
+                "📋 Название отчета",
                 value="UX Research Report",
                 placeholder="Название отчета"
             )
             
             author = st.text_input(
-                "Автор отчета",
+                "👤 Автор отчета",
                 value="Research Team",
                 placeholder="Автор отчета"
             )
     
     # Этап 2: Загрузка данных
-    with st.expander("2️⃣ Загрузка данных", expanded=False):
-        st.markdown("**Загрузите транскрипты интервью и бриф исследования**")
+    st.markdown("""
+    <div class="step-card">
+        <div class="step-header">
+            <div class="step-number">2</div>
+            <div>
+                <div class="step-title">📤 Загрузка данных</div>
+                <div class="step-description">Загрузите транскрипты интервью и бриф исследования</div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Загрузка файлов
+    col2_1, col2_2 = st.columns(2)
+    
+    with col2_1:
+        st.markdown("""
+        <div class="upload-area">
+            <div class="upload-icon">📄</div>
+            <div class="upload-text">Загрузите транскрипты интервью</div>
+        </div>
+        """, unsafe_allow_html=True)
         
-        col1, col2 = st.columns(2)
+        uploaded_files = st.file_uploader(
+            "Выберите файлы с транскриптами",
+            type=['txt', 'md', 'docx', 'doc'],
+            accept_multiple_files=True,
+            help="Поддерживаемые форматы: .txt, .md, .docx, .doc",
+            label_visibility="collapsed"
+        )
         
-        with col1:
-            uploaded_files = st.file_uploader(
-                "Загрузите транскрипты",
-                type=['txt', 'md', 'docx', 'doc'],
-                accept_multiple_files=True,
-                help="Выберите файлы с транскриптами интервью (.txt, .md, .docx, .doc)"
-            )
+        if uploaded_files:
+            st.markdown(f"""
+            <div class="success-message">
+                ✅ Загружено {len(uploaded_files)} файлов
+            </div>
+            """, unsafe_allow_html=True)
             
-            if uploaded_files:
-                st.success(f"✅ Загружено {len(uploaded_files)} файлов")
-                for file in uploaded_files:
-                    st.write(f"📄 {file.name} ({(file.size / 1024):.1f} KB)")
+            for file in uploaded_files:
+                st.markdown(f"""
+                <div class="file-item">
+                    📄 {file.name} ({(file.size / 1024):.1f} KB)
+                </div>
+                """, unsafe_allow_html=True)
 
-        with col2:
-            uploaded_brief = st.file_uploader(
-                "Загрузите бриф (опционально)",
-                type=['txt', 'md', 'docx', 'doc'],
-                help="Бриф с целями исследования (.txt, .md, .docx, .doc)"
-            )
+    with col2_2:
+        st.markdown("""
+        <div class="upload-area">
+            <div class="upload-icon">📋</div>
+            <div class="upload-text">Загрузите бриф исследования (опционально)</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        uploaded_brief = st.file_uploader(
+            "Выберите файл с брифом",
+            type=['txt', 'md', 'docx', 'doc'],
+            help="Бриф с целями исследования",
+            label_visibility="collapsed"
+        )
+        
+        if uploaded_brief:
+            st.markdown(f"""
+            <div class="success-message">
+                ✅ Бриф загружен
+            </div>
+            """, unsafe_allow_html=True)
             
-            if uploaded_brief:
-                st.success("✅ Бриф загружен")
-                st.write(f"📄 {uploaded_brief.name} ({(uploaded_brief.size / 1024):.1f} KB)")
+            st.markdown(f"""
+            <div class="file-item">
+                📋 {uploaded_brief.name} ({(uploaded_brief.size / 1024):.1f} KB)
+            </div>
+            """, unsafe_allow_html=True)
     
     # Этап 3: Анализ
-    with st.expander("3️⃣ Запуск анализа", expanded=False):
-        st.markdown("**Запустите анализ данных и получите детальный отчет**")
-        
-        if st.button("🚀 Начать анализ", type="primary", disabled=not (uploaded_files and api_key)):
+    st.markdown("""
+    <div class="step-card">
+        <div class="step-header">
+            <div class="step-number">3</div>
+            <div>
+                <div class="step-title">🚀 Запуск анализа</div>
+                <div class="step-description">Запустите анализ данных и получите детальный отчет</div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Кнопка анализа
+    col3_1, col3_2, col3_3 = st.columns([1, 2, 1])
+    
+    with col3_2:
+        if st.button("🚀 Начать анализ", type="primary", disabled=not (uploaded_files and api_key), use_container_width=True):
             if not api_key:
-                st.error("❌ Введите API ключ!")
+                st.markdown("""
+                <div class="error-message">
+                    ❌ Введите API ключ!
+                </div>
+                """, unsafe_allow_html=True)
             elif not uploaded_files:
-                st.error("❌ Загрузите транскрипты!")
+                st.markdown("""
+                <div class="error-message">
+                    ❌ Загрузите транскрипты!
+                </div>
+                """, unsafe_allow_html=True)
             else:
                 # Показываем загрузку
-                progress_bar = st.progress(0)
-                status_text = st.empty()
+                st.markdown("""
+                <div class="progress-container">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">🔧 Настройка Claude 3.5 Sonnet...</div>
+                    </div>
+                    <div class="progress-bar" style="width: 20%;"></div>
+                </div>
+                """, unsafe_allow_html=True)
                 
+                # Простая проверка API ключа
+                if api_key.startswith("sk-or-v1-"):
+                    st.markdown("""
+                    <div class="success-message">
+                        ✅ API ключ валидный
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown("""
+                    <div class="error-message">
+                        ⚠️ Проверьте формат API ключа
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                # Продолжение анализа...
+                st.markdown("""
+                <div class="progress-container">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">🔬 Запуск анализа...</div>
+                    </div>
+                    <div class="progress-bar" style="width: 40%;"></div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Читаем транскрипты
+                transcripts = []
+                for file in uploaded_files:
+                    content = read_file_content(file)
+                    transcripts.append(content)
+                
+                st.markdown("""
+                <div class="progress-container">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">📊 Обработка данных...</div>
+                    </div>
+                    <div class="progress-bar" style="width: 60%;"></div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Реальный анализ через OpenRouter API
                 try:
-                    status_text.text("🔧 Настройка Claude 3.5 Sonnet...")
-                    progress_bar.progress(20)
+                    import requests
                     
-                    # Простая проверка API ключа
-                    if api_key.startswith("sk-or-v1-"):
-                        st.success("✅ API ключ валидный")
-                    else:
-                        st.warning("⚠️ Проверьте формат API ключа")
+                    # Подготавливаем данные для анализа
+                    all_transcripts = "\n\n".join(transcripts)
+                    brief_text = ""
+                    if uploaded_brief:
+                        brief_text = read_file_content(uploaded_brief)
                     
-                    status_text.text("🔬 Запуск анализа...")
-                    progress_bar.progress(40)
+                    # Формируем запрос к OpenRouter для анализа брифа
+                    brief_prompt = f"""
+                    Проанализируй следующие транскрипты пользовательских интервью и ответь на вопросы из брифа исследования.
                     
-                    # Читаем транскрипты
-                    transcripts = []
-                    for file in uploaded_files:
-                        content = read_file_content(file)
-                        transcripts.append(content)
+                    БРИФ ИССЛЕДОВАНИЯ:
+                    {brief_text if brief_text else "Бриф не предоставлен"}
                     
-                    status_text.text("📊 Обработка данных...")
-                    progress_bar.progress(60)
+                    ТРАНСКРИПТЫ ИНТЕРВЬЮ:
+                    {all_transcripts[:8000]}
                     
-                    # Реальный анализ через OpenRouter API
-                    try:
-                        import requests
-                        
-                        # Подготавливаем данные для анализа
-                        all_transcripts = "\n\n".join(transcripts)
-                        brief_text = ""
-                        if uploaded_brief:
-                            brief_text = read_file_content(uploaded_brief)
-                        
-                        # Формируем запрос к OpenRouter для анализа брифа
-                        brief_prompt = f"""
-                        Проанализируй следующие транскрипты пользовательских интервью и ответь на вопросы из брифа исследования.
-                        
-                        БРИФ ИССЛЕДОВАНИЯ:
-                        {brief_text if brief_text else "Бриф не предоставлен"}
-                        
-                        ТРАНСКРИПТЫ ИНТЕРВЬЮ:
-                        {all_transcripts[:8000]}
-                        
-                        ЗАДАЧА:
-                        На основе транскриптов интервью ответь на каждый вопрос из брифа исследования. 
-                        Для каждого ответа приведи конкретные цитаты из интервью.
-                        
-                        Формат ответа:
-                        ВОПРОС: [вопрос из брифа]
-                        ОТВЕТ: [ответ на основе транскриптов]
-                        ЦИТАТЫ: [конкретные цитаты из интервью]
-                        
-                        Отчет должен быть на русском языке.
-                        """
-                        
-                        # Отправляем запрос к OpenRouter
-                        response = requests.post(
-                            "https://openrouter.ai/api/v1/chat/completions",
-                            headers={
-                                "Authorization": f"Bearer {api_key}",
-                                "Content-Type": "application/json"
-                            },
-                            json={
-                                "model": "anthropic/claude-3.5-sonnet",
-                                "messages": [
-                                    {"role": "user", "content": brief_prompt}
-                                ],
-                                "max_tokens": 3000,
-                                "temperature": 0.7
-                            }
-                        )
-                        
-                        # Показываем детали ошибки
-                        st.write(f"Статус ответа: {response.status_code}")
-                        if response.status_code != 200:
-                            st.write(f"Ответ API: {response.text}")
-                            if response.status_code == 401:
-                                st.error("❌ Неверный API ключ! Проверьте ключ в настройках.")
-                            elif response.status_code == 429:
-                                st.error("❌ Превышен лимит запросов. Попробуйте позже.")
-                            else:
-                                st.error(f"❌ Ошибка API: {response.status_code}")
-                        
-                        if response.status_code == 200:
-                            analysis_result = response.json()["choices"][0]["message"]["content"]
-                            st.success("✅ Анализ выполнен через OpenRouter API!")
-                        else:
-                            analysis_result = f"Ошибка API: {response.status_code} - {response.text}"
-                            st.warning("⚠️ Ошибка при обращении к API")
-                        
-                    except Exception as e:
-                        analysis_result = f"Ошибка анализа: {str(e)}"
-                        st.error(f"❌ Ошибка: {e}")
+                    ЗАДАЧА:
+                    На основе транскриптов интервью ответь на каждый вопрос из брифа исследования. 
+                    Для каждого ответа приведи конкретные цитаты из интервью.
                     
-                    # Генерируем детальный HTML отчет
-                    status_text.text("📋 Генерация детального отчета...")
-                    progress_bar.progress(90)
+                    Формат ответа:
+                    ВОПРОС: [вопрос из брифа]
+                    ОТВЕТ: [ответ на основе транскриптов]
+                    ЦИТАТЫ: [конкретные цитаты из интервью]
                     
-                    # Создаем структурированные данные для отчета
-                    report_data = {
-                        "company": company_name,
-                        "report_title": report_title,
-                        "author": author,
-                        "transcripts_count": len(transcripts),
-                        "brief_uploaded": uploaded_brief is not None,
-                        "status": "Анализ завершен успешно",
-                        "analysis_result": analysis_result,
-                        "all_transcripts": all_transcripts,
-                        "brief_text": brief_text,
-                        "total_chars": len(all_transcripts)
-                    }
+                    Отчет должен быть на русском языке.
+                    """
                     
-                    # Генерируем полный HTML отчет
-                    html_report = generate_detailed_html_report(report_data)
-                    
-                    progress_bar.progress(100)
-                    status_text.text("✅ Анализ завершен!")
-                    
-                    st.success("🎉 Анализ успешно завершен!")
-                    
-                    # Показываем результаты
-                    st.header("📊 Детальный отчет")
-                    
-                    # Показываем HTML отчет
-                    st.components.v1.html(html_report, height=800, scrolling=True)
-                    
-                    # Кнопка для скачивания HTML
-                    st.download_button(
-                        label="📥 Скачать HTML отчет",
-                        data=html_report,
-                        file_name=f"ux_report_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
-                        mime="text/html"
+                    # Отправляем запрос к OpenRouter
+                    response = requests.post(
+                        "https://openrouter.ai/api/v1/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {api_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "model": "anthropic/claude-3.5-sonnet",
+                            "messages": [
+                                {"role": "user", "content": brief_prompt}
+                            ],
+                            "max_tokens": 3000,
+                            "temperature": 0.7
+                        }
                     )
                     
-                    # Информация о следующих шагах
-                    st.info("""
-                    **Результат:**
-                    - Анализ выполнен через Claude 3.5 Sonnet
-                    - Сгенерирован детальный HTML отчет
-                    - Ответы основаны на реальных транскриптах интервью
-                    - Цитаты взяты из интервью
-                    """)
+                    if response.status_code != 200:
+                        if response.status_code == 401:
+                            st.markdown("""
+                            <div class="error-message">
+                                ❌ Неверный API ключ! Проверьте ключ в настройках.
+                            </div>
+                            """, unsafe_allow_html=True)
+                        elif response.status_code == 429:
+                            st.markdown("""
+                            <div class="error-message">
+                                ❌ Превышен лимит запросов. Попробуйте позже.
+                            </div>
+                            """, unsafe_allow_html=True)
+                        else:
+                            st.markdown(f"""
+                            <div class="error-message">
+                                ❌ Ошибка API: {response.status_code}
+                            </div>
+                            """, unsafe_allow_html=True)
+                    
+                    if response.status_code == 200:
+                        analysis_result = response.json()["choices"][0]["message"]["content"]
+                        st.markdown("""
+                        <div class="success-message">
+                            ✅ Анализ выполнен через OpenRouter API!
+                        </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        analysis_result = f"Ошибка API: {response.status_code} - {response.text}"
+                        st.markdown("""
+                        <div class="error-message">
+                            ⚠️ Ошибка при обращении к API
+                        </div>
+                        """, unsafe_allow_html=True)
                     
                 except Exception as e:
-                    st.error(f"❌ Ошибка при анализе: {e}")
+                    analysis_result = f"Ошибка анализа: {str(e)}"
+                    st.markdown(f"""
+                    <div class="error-message">
+                        ❌ Ошибка: {e}
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                # Генерация отчета
+                st.markdown("""
+                <div class="progress-container">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">📋 Генерация детального отчета...</div>
+                    </div>
+                    <div class="progress-bar" style="width: 90%;"></div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Создаем структурированные данные для отчета
+                report_data = {
+                    "company": company_name,
+                    "report_title": report_title,
+                    "author": author,
+                    "transcripts_count": len(transcripts),
+                    "brief_uploaded": uploaded_brief is not None,
+                    "status": "Анализ завершен успешно",
+                    "analysis_result": analysis_result,
+                    "all_transcripts": all_transcripts,
+                    "brief_text": brief_text,
+                    "total_chars": len(all_transcripts)
+                }
+                
+                # Генерируем полный HTML отчет
+                html_report = generate_detailed_html_report(report_data)
+                
+                st.markdown("""
+                <div class="progress-container">
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div style="font-size: 1.2rem; font-weight: 600; color: #4a5568;">✅ Анализ завершен!</div>
+                    </div>
+                    <div class="progress-bar" style="width: 100%;"></div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                st.markdown("""
+                <div class="success-message">
+                    🎉 Анализ успешно завершен!
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Показываем результаты
+                st.markdown("## 📊 Детальный отчет")
+                
+                # Показываем HTML отчет
+                st.components.v1.html(html_report, height=800, scrolling=True)
+                
+                # Кнопка для скачивания HTML
+                st.download_button(
+                    label="📥 Скачать HTML отчет",
+                    data=html_report,
+                    file_name=f"ux_report_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
+                    mime="text/html",
+                    use_container_width=True
+                )
+                
+                # Информация о следующих шагах
+                st.markdown("""
+                <div class="info-card">
+                    <h3>🎯 Результат анализа</h3>
+                    <p>• Анализ выполнен через Claude 3.5 Sonnet</p>
+                    <p>• Сгенерирован детальный HTML отчет</p>
+                    <p>• Ответы основаны на реальных транскриптах интервью</p>
+                    <p>• Цитаты взяты из интервью</p>
+                </div>
+                """, unsafe_allow_html=True)
 
-# Кнопка очистки в сайдбаре
-st.sidebar.header("🔧 Управление")
-if st.sidebar.button("🗑️ Очистить все", type="secondary"):
-    st.rerun()
+with col2:
+    # Боковая панель
+    st.markdown("""
+    <div class="sidebar-content">
+        <h3>🔧 Управление</h3>
+        <p>Используйте кнопку ниже для очистки всех данных и начала заново.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    if st.button("🗑️ Очистить все", type="secondary", use_container_width=True):
+        st.rerun()
+    
+    # Статус
+    st.markdown("""
+    <div class="sidebar-content">
+        <h3>📊 Статус</h3>
+        <div style="margin: 1rem 0;">
+            <div class="status-badge status-success">Файлы: {}</div>
+            <div class="status-badge status-success">Бриф: {}</div>
+            <div class="status-badge status-success">API: {}</div>
+        </div>
+    </div>
+    """.format(
+        len(uploaded_files) if 'uploaded_files' in locals() and uploaded_files else 0,
+        '✅' if 'uploaded_brief' in locals() and uploaded_brief else '❌',
+        '✅' if 'api_key' in locals() and api_key else '❌'
+    ), unsafe_allow_html=True)
 
 # Подвал с информацией
 st.markdown("---")
-st.markdown("### ℹ️ О системе")
-st.info("""
-**UX Анализатор V24.0** - Профессиональный инструмент для анализа пользовательских интервью
-
-**Возможности:**
-- 🔍 Детальный анализ транскриптов интервью
-- 📊 Генерация инсайтов и рекомендаций с цитатами
-- 📋 Создание профессиональных отчетов
-- 🎯 Поддержка брифа исследования
-- 📈 Трассировка выводов к исходным данным
-
-**Технологии:** Claude 3.5 Sonnet, Streamlit, OpenRouter API
-""")
+st.markdown("""
+<div class="info-card">
+    <h3>ℹ️ О системе</h3>
+    <p><strong>UX Анализатор V24.0</strong> - Профессиональный инструмент для анализа пользовательских интервью</p>
+    
+    <h4>Возможности:</h4>
+    <ul>
+        <li>🔍 Детальный анализ транскриптов интервью</li>
+        <li>📊 Генерация инсайтов и рекомендаций с цитатами</li>
+        <li>📋 Создание профессиональных отчетов</li>
+        <li>🎯 Поддержка брифа исследования</li>
+        <li>📈 Трассировка выводов к исходным данным</li>
+    </ul>
+    
+    <p><strong>Технологии:</strong> Claude 3.5 Sonnet, Streamlit, OpenRouter API</p>
+</div>
+""", unsafe_allow_html=True)

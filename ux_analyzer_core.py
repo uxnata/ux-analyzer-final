@@ -5,6 +5,7 @@ import json
 import re
 import time
 from typing import Dict, List, Any
+from collections import defaultdict
 from ux_analyzer_classes import (
     OpenRouterAPIWrapper, BriefManager, InterviewSummary, 
     ResearchFindings, CacheManager

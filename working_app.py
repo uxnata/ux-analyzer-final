@@ -180,16 +180,24 @@ if st.button("🚀 Начать анализ", type="primary", disabled=not uplo
                     "https://openrouter.ai/api/v1/chat/completions",
                     headers={
                         "Authorization": f"Bearer {api_key}",
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": "https://ux-analyzer-final.streamlit.app",
+                        "X-Title": "UX Analyzer"
                     },
                     json={
                         "model": "google/gemini-pro",
                         "messages": [
                             {"role": "user", "content": brief_prompt}
                         ],
-                        "max_tokens": 3000
+                        "max_tokens": 3000,
+                        "temperature": 0.7
                     }
                 )
+                
+                # Показываем детали ошибки
+                st.write(f"Статус ответа: {response.status_code}")
+                if response.status_code != 200:
+                    st.write(f"Ответ API: {response.text}")
                 
                 if response.status_code == 200:
                     analysis_result = response.json()["choices"][0]["message"]["content"]

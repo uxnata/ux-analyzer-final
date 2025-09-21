@@ -1377,6 +1377,9 @@ with col3_2:
             # Генерируем полный HTML отчет
             html_report = generate_detailed_html_report(report_data)
             
+            # Сохраняем отчет в session_state для скачивания
+            st.session_state['html_report'] = html_report
+            
             st.markdown("""
             <div class="progress-container">
                 <div style="text-align: center; margin-bottom: 1rem;">
@@ -1399,13 +1402,14 @@ with col3_2:
             st.components.v1.html(html_report, height=800, scrolling=True)
             
             # Кнопка для скачивания HTML
-            st.download_button(
-                label="📥 Скачать HTML отчет",
-                data=html_report.encode('utf-8'),
-                file_name=f"ux_report_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
-                mime="text/html",
-                use_container_width=True
-            )
+            if 'html_report' in st.session_state:
+                st.download_button(
+                    label="📥 Скачать HTML отчет",
+                    data=st.session_state['html_report'].encode('utf-8'),
+                    file_name=f"ux_report_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
+                    mime="text/html",
+                    use_container_width=True
+                )
             
             # Информация о следующих шагах
             st.markdown("""

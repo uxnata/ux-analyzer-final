@@ -53,10 +53,10 @@ col1, col2 = st.columns(2)
 
 with col1:
     api_key = st.text_input(
-        "Gemini API Key",
+        "OpenRouter API Key",
         type="password",
-        value="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",
-        help="API ключ для Google Gemini"
+        placeholder="Введите ваш OpenRouter API ключ",
+        help="API ключ для OpenRouter"
     )
     
     company_name = st.text_input(

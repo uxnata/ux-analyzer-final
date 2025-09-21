@@ -139,9 +139,6 @@ def generate_detailed_html_report(data):
     # Текущая дата
     current_date = datetime.now().strftime("%d.%m.%Y")
     
-    # Генерируем HTML отчет
-    html_content = f"""
-    
     # CSS стили с более солидными цветами
     css_styles = """
     <style>

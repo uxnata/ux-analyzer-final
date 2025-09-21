@@ -9,15 +9,27 @@ import os
 
 # Добавляем текущую директорию в путь для импорта модулей
 current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, current_dir)
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
+# Также добавляем родительскую директорию
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
 
 # Импорты наших классов
 try:
+    import ux_analyzer_classes
     from ux_analyzer_classes import CompanyConfig, BriefManager
+    import ux_analyzer_core
     from ux_analyzer_core import AdvancedUXAnalyzer
+    import ux_report_generator
     from ux_report_generator import EnhancedReportGenerator
+    st.success("✅ Все модули успешно загружены")
 except ImportError as e:
     st.error(f"❌ Ошибка импорта модулей: {e}")
+    st.error(f"Текущая директория: {current_dir}")
+    st.error(f"Python path: {sys.path[:3]}")
     st.error("Попробуйте перезагрузить страницу")
     st.stop()
 

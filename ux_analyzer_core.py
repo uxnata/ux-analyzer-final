@@ -310,6 +310,7 @@ class AdvancedUXAnalyzer:
                     })
 
         # Группируем похожие проблемы
+        from collections import defaultdict
         pain_groups = defaultdict(list)
         for pain in all_pains:
             pain_text = pain['pain'].lower()

@@ -36,21 +36,6 @@ def read_file_content(file):
         # Для .txt и .md файлов
         return file.read().decode('utf-8')
 
-def generate_detailed_html_report(data):
-    """Генерация детального HTML отчета"""
-    
-    # Извлекаем данные
-    company = data.get('company', 'Company')
-    report_title = data.get('report_title', 'UX Research Report')
-    author = data.get('author', 'Research Team')
-    transcripts_count = data.get('transcripts_count', 0)
-    brief_uploaded = data.get('brief_uploaded', False)
-    analysis_result = data.get('analysis_result', '')
-    all_transcripts = data.get('all_transcripts', '')
-    brief_text = data.get('brief_text', '')
-    total_chars = data.get('total_chars', 0)
-    
-    # Анализируем транскрипты для получения реальных выводов
 def analyze_transcripts(transcripts_text):
     """Детальный анализ транскриптов для получения общих выводов"""
     if not transcripts_text:
@@ -133,12 +118,29 @@ def analyze_transcripts(transcripts_text):
         'problem_density': len(problems) / max(len(words) / 1000, 1),  # Проблем на 1000 слов
         'positive_density': positive_count / max(len(words) / 1000, 1)  # Положительных на 1000 слов
     }
+
+def generate_detailed_html_report(data):
+    """Генерация детального HTML отчета"""
     
-    # Анализируем транскрипты
+    # Извлекаем данные
+    company = data.get('company', 'Company')
+    report_title = data.get('report_title', 'UX Research Report')
+    author = data.get('author', 'Research Team')
+    transcripts_count = data.get('transcripts_count', 0)
+    brief_uploaded = data.get('brief_uploaded', False)
+    analysis_result = data.get('analysis_result', '')
+    all_transcripts = data.get('all_transcripts', '')
+    brief_text = data.get('brief_text', '')
+    total_chars = data.get('total_chars', 0)
+    
+    # Анализируем транскрипты для получения реальных выводов
     transcript_analysis = analyze_transcripts(all_transcripts)
     
     # Текущая дата
     current_date = datetime.now().strftime("%d.%m.%Y")
+    
+    # Генерируем HTML отчет
+    html_content = f"""
     
     # CSS стили с более солидными цветами
     css_styles = """
@@ -1402,14 +1404,23 @@ with col3_2:
             st.components.v1.html(html_report, height=800, scrolling=True)
             
             # Кнопка для скачивания HTML
-            if 'html_report' in st.session_state:
-                st.download_button(
-                    label="📥 Скачать HTML отчет",
-                    data=st.session_state['html_report'].encode('utf-8'),
-                    file_name=f"ux_report_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
-                    mime="text/html",
-                    use_container_width=True
-                )
+            if 'html_report' in st.session_state and st.session_state['html_report']:
+                try:
+                    html_data = st.session_state['html_report']
+                    if isinstance(html_data, str):
+                        st.download_button(
+                            label="📥 Скачать HTML отчет",
+                            data=html_data.encode('utf-8'),
+                            file_name=f"ux_report_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
+                            mime="text/html",
+                            use_container_width=True
+                        )
+                    else:
+                        st.error("Ошибка: HTML отчет имеет неверный формат")
+                except Exception as e:
+                    st.error(f"Ошибка при создании кнопки скачивания: {str(e)}")
+            else:
+                st.warning("HTML отчет недоступен для скачивания")
             
             # Информация о следующих шагах
             st.markdown("""

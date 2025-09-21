@@ -33,6 +33,25 @@ class EnhancedReportGenerator:
         brief_answers = analysis_data.get('brief_answers', {})
         current_metrics = analysis_data.get('current_metrics', {})
         
+        # Если findings - это объект ResearchFindings, извлекаем данные
+        if hasattr(findings, 'key_insights'):
+            findings_data = {
+                'executive_summary': getattr(findings, 'executive_summary', ''),
+                'key_insights': getattr(findings, 'key_insights', []),
+                'behavioral_patterns': getattr(findings, 'behavioral_patterns', []),
+                'user_segments': getattr(findings, 'user_segments', []),
+                'pain_points_map': getattr(findings, 'pain_points_map', {}),
+                'opportunities': getattr(findings, 'opportunities', []),
+                'recommendations': getattr(findings, 'recommendations', []),
+                'risks': getattr(findings, 'risks', []),
+                'personas': getattr(findings, 'personas', []),
+                'current_metrics': getattr(findings, 'current_metrics', {}),
+                'brief_answers': getattr(findings, 'brief_answers', {}),
+                'goal_achievement': getattr(findings, 'goal_achievement', {})
+            }
+        else:
+            findings_data = findings
+        
         html_content = f"""
 <!DOCTYPE html>
 <html lang="ru">
@@ -47,19 +66,19 @@ class EnhancedReportGenerator:
 <body>
     {self._generate_header()}
     {self._generate_table_of_contents()}
-    {self._generate_executive_summary(findings)}
-    {self._generate_brief_section(analysis_data.get('brief_data', {}))}
-    {self._generate_brief_answers(brief_answers)}
-    {self._generate_personas_section(personas)}
-    {self._generate_insights_section(findings.get('key_insights', []))}
-    {self._generate_pain_points_section(findings.get('key_insights', []))}
-    {self._generate_user_needs_section(findings)}
-    {self._generate_behavioral_patterns_section(findings.get('behavioral_patterns', []))}
-    {self._generate_emotional_journey_section(analysis_data.get('interview_summaries', []))}
-    {self._generate_contradictions_section(analysis_data.get('interview_summaries', []))}
-    {self._generate_quotes_section(analysis_data.get('interview_summaries', []))}
-    {self._generate_recommendations_section(recommendations)}
-    {self._generate_appendix_section(analysis_data)}
+            {self._generate_executive_summary(findings_data)}
+            {self._generate_brief_section(analysis_data.get('brief_data', {}))}
+            {self._generate_brief_answers(brief_answers)}
+            {self._generate_personas_section(personas)}
+            {self._generate_insights_section(findings_data.get('key_insights', []))}
+            {self._generate_pain_points_section(findings_data.get('key_insights', []))}
+            {self._generate_user_needs_section(findings_data)}
+            {self._generate_behavioral_patterns_section(findings_data.get('behavioral_patterns', []))}
+            {self._generate_emotional_journey_section(analysis_data.get('interview_summaries', []))}
+            {self._generate_contradictions_section(analysis_data.get('interview_summaries', []))}
+            {self._generate_quotes_section(analysis_data.get('interview_summaries', []))}
+            {self._generate_recommendations_section(recommendations)}
+            {self._generate_appendix_section(analysis_data)}
     {self._generate_footer()}
 </body>
 </html>
@@ -463,15 +482,16 @@ class EnhancedReportGenerator:
         </div>
         """
 
-    def _generate_executive_summary(self, findings: Dict) -> str:
+    def _generate_executive_summary(self, findings) -> str:
         """Генерация резюме"""
+        summary = getattr(findings, 'executive_summary', 'Анализ пользовательских интервью выявил ключевые проблемы и возможности для улучшения продукта.')
         return f"""
         <div class="page" id="summary">
             <div class="container">
                 <h2>Резюме</h2>
                 <div class="card">
                     <p style="font-size: 1.2rem; line-height: 1.8; color: #374151;">
-                        {findings.get('executive_summary', 'Анализ пользовательских интервью выявил ключевые проблемы и возможности для улучшения продукта.')}
+                        {summary}
                     </p>
                 </div>
             </div>
@@ -652,9 +672,9 @@ class EnhancedReportGenerator:
 
             insights_html += f"""
             <div class="insight-card">
-                <h3>Инсайт #{i}: {insight.get('title', '')}</h3>
+                <h3>Инсайт #{i}: {insight.get('problem_title', insight.get('title', ''))}</h3>
                 <p style="font-size: 1.2rem; line-height: 1.8; margin: 20px 0; font-weight: 500;">
-                    {insight.get('description', '')}
+                    {insight.get('problem_description', insight.get('description', ''))}
                 </p>
                 {quotes_html}
                 <div style="margin-top: 20px; display: flex; gap: 15px;">

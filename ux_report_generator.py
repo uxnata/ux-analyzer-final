@@ -27,6 +27,8 @@ class EnhancedReportGenerator:
 
     def generate_html(self, analysis_data: Dict) -> str:
         """Генерация полного HTML отчета"""
+        print(f"🔍 DEBUG: analysis_data keys: {list(analysis_data.keys())}")
+        
         findings = analysis_data.get('findings', {})
         personas = analysis_data.get('personas', [])
         recommendations = analysis_data.get('recommendations', {})
@@ -34,6 +36,10 @@ class EnhancedReportGenerator:
         current_metrics = analysis_data.get('current_metrics', {})
         interview_summaries = analysis_data.get('interview_summaries', [])
         total_interviews = analysis_data.get('total_interviews', len(interview_summaries))
+        
+        print(f"🔍 DEBUG: findings type: {type(findings)}")
+        print(f"🔍 DEBUG: personas count: {len(personas)}")
+        print(f"🔍 DEBUG: interview_summaries count: {len(interview_summaries)}")
         
         # Если findings - это объект ResearchFindings, извлекаем данные
         if hasattr(findings, 'key_insights'):

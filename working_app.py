@@ -2056,6 +2056,11 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
             
             analysis_results = analyzer.analyze_transcripts(transcripts)
             
+            # Отладочная информация
+            st.write("🔍 Отладка анализа:")
+            st.write(f"Тип результата: {type(analysis_results)}")
+            st.write(f"Ключи результата: {list(analysis_results.keys()) if isinstance(analysis_results, dict) else 'Не словарь'}")
+            
             status_text.text("✅ Анализ завершен!")
             progress_bar.progress(80)
             

@@ -156,7 +156,11 @@ class AdvancedUXAnalyzer:
 
         try:
             response = self.api_wrapper.generate_content(prompt, max_tokens=4000)
+            print(f"🔍 DEBUG: API response length: {len(response)}")
+            print(f"🔍 DEBUG: API response preview: {response[:200]}...")
+            
             data = self.api_wrapper.extract_json(response)
+            print(f"🔍 DEBUG: Extracted data keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
             
             # Создаем InterviewSummary
             return InterviewSummary(

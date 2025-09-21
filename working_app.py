@@ -2140,116 +2140,24 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
             st.session_state['report_data'] = report_data
         
         # Показываем результаты
-        st.markdown("## 📊 Настройка отчета")
+        st.markdown("## 📊 Результаты анализа")
         
-        # Выбор блоков для включения в отчет
-        st.markdown("### Выберите разделы для включения в отчет:")
+        # Кнопка скачивания полного отчета
+        col_download_1, col_download_2, col_download_3 = st.columns([1, 2, 1])
         
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            include_overview = st.checkbox("📊 Общий обзор", value=True)
-            include_brief = st.checkbox("📋 Бриф исследования", value=True)
-            include_brief_answers = st.checkbox("❓ Ответы на вопросы брифа", value=True)
-            include_analysis = st.checkbox("🔍 Анализ результатов", value=True)
-            include_personas = st.checkbox("👥 Персоны пользователей", value=True)
-            
-        with col2:
-            include_insights = st.checkbox("💡 Ключевые инсайты", value=True)
-            include_pain_points = st.checkbox("⚠️ Болевые точки", value=True)
-            include_user_needs = st.checkbox("🎯 Потребности пользователей", value=True)
-            include_behavioral = st.checkbox("🔄 Поведенческие паттерны", value=True)
-            include_emotional = st.checkbox("😊 Эмоциональное путешествие", value=True)
-            
-        with col3:
-            include_contradictions = st.checkbox("⚖️ Противоречия", value=True)
-            include_quotes = st.checkbox("💬 Значимые цитаты", value=True)
-            include_recommendations = st.checkbox("🎯 Рекомендации", value=True)
-            include_appendix = st.checkbox("📎 Приложение", value=True)
-        
-        # Генерируем отчет с выбранными блоками
-        col_gen_1, col_gen_2, col_gen_3 = st.columns([1, 2, 1])
-        
-        with col_gen_2:
-            if st.button("📄 Сгенерировать кастомный отчет", type="primary", use_container_width=True):
-                with st.spinner("🔄 Генерация отчета..."):
-                    # Собираем выбранные разделы
-                    selected_sections = {
-                        'overview': include_overview,
-                        'brief': include_brief,
-                        'brief_answers': include_brief_answers,
-                        'analysis': include_analysis,
-                        'personas': include_personas,
-                        'insights': include_insights,
-                        'pain_points': include_pain_points,
-                        'user_needs': include_user_needs,
-                        'behavioral': include_behavioral,
-                        'emotional': include_emotional,
-                        'contradictions': include_contradictions,
-                        'quotes': include_quotes,
-                        'recommendations': include_recommendations,
-                        'appendix': include_appendix
-                    }
-                    
-                    # Генерируем кастомный отчет
-                    if 'report_data' in st.session_state and st.session_state['report_data']:
-                        company_config = CompanyConfig(
-                            name=st.session_state['report_data'].get('company', 'Company'),
-                            report_title=st.session_state['report_data'].get('report_title', 'UX Report'),
-                            author=st.session_state['report_data'].get('author', 'Research Team')
-                        )
-                        generator = EnhancedReportGenerator(company_config)
-                        custom_html_report = generator.generate_html(st.session_state['report_data'])
-                    else:
-                        st.error("❌ Данные отчета не найдены. Сначала выполните анализ.")
-                        custom_html_report = None
-                    
-                    # Сохраняем в session_state
-                    st.session_state['custom_html_report'] = custom_html_report
-                    st.session_state['selected_sections'] = selected_sections
-                    
-                    st.success("✅ Отчет сгенерирован! Используйте кнопку скачивания ниже.")
-                    st.rerun()
-        
-        # Кнопки для скачивания HTML
-        col_download_1, col_download_2 = st.columns(2)
-        
-        with col_download_1:
-            # Полный отчет
+        with col_download_2:
             if 'html_report' in st.session_state and st.session_state['html_report']:
                 st.download_button(
                     label="📥 Скачать полный отчет",
                     data=st.session_state['html_report'].encode('utf-8'),
                     file_name=f"ux_report_full_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
                     mime="text/html",
-                    use_container_width=True
+                    use_container_width=True,
+                    type="primary"
                 )
             else:
                 st.button("📥 Скачать полный отчет", disabled=True, use_container_width=True)
-        
-        with col_download_2:
-            # Кастомный отчет
-            if 'custom_html_report' in st.session_state and st.session_state['custom_html_report']:
-                try:
-                    html_data = st.session_state['custom_html_report']
-                    if isinstance(html_data, str):
-                        # Показываем информацию о выбранных разделах
-                        selected_count = sum(1 for v in st.session_state.get('selected_sections', {}).values() if v)
-                        st.info(f"📊 Кастомный отчет: {selected_count} разделов")
-                        
-                        st.download_button(
-                            label="📥 Скачать кастомный отчет",
-                            data=html_data.encode('utf-8'),
-                            file_name=f"ux_report_custom_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
-                            mime="text/html",
-                            use_container_width=True
-                        )
-                    else:
-                        st.error("Ошибка: HTML отчет имеет неверный формат")
-                except Exception as e:
-                    st.error(f"Ошибка при создании кнопки скачивания: {str(e)}")
-            else:
-                st.button("📥 Скачать кастомный отчет", disabled=True, use_container_width=True)
+                st.warning("⚠️ Отчет еще не сгенерирован. Запустите анализ сначала.")
         
         # Информация о следующих шагах
         st.markdown("""

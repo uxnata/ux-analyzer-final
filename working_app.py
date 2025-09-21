@@ -57,7 +57,7 @@ with col1:
     api_key = st.text_input(
         "OpenRouter API Key",
         type="password",
-        value="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",
+        value="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",
         help="API ключ для OpenRouter"
     )
     

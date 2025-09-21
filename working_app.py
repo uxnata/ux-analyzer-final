@@ -2001,7 +2001,6 @@ with col2_2:
     
     if uploaded_brief:
         st.success("✅ Бриф загружен")
-        st.info(f"📋 {uploaded_brief.name} ({(uploaded_brief.size / 1024):.1f} KB)")
 
 # Кнопка анализа
 if st.button("🚀 Генерация отчета", type="primary", disabled=not (uploaded_files and api_key), use_container_width=True):
@@ -2015,13 +2014,23 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
             st.error("⚠️ Проверьте формат API ключа")
             st.stop()
         
+        # Показываем прогресс
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
         # Читаем транскрипты
+        status_text.text("📖 Чтение файлов...")
+        progress_bar.progress(20)
+        
         transcripts = []
         for file in uploaded_files:
             content = read_file_content(file)
             transcripts.append(content)
         
         # Реальный анализ через OpenRouter API
+        status_text.text("🤖 Анализ через Claude 3.5 Sonnet...")
+        progress_bar.progress(40)
+        
         try:
             import requests
             
@@ -2104,6 +2113,9 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
 """
             
             # Отправляем запрос к OpenRouter
+            status_text.text("🌐 Отправка запроса к API...")
+            progress_bar.progress(60)
+            
             response = requests.post(
                 "https://openrouter.ai/api/v1/chat/completions",
                 headers={
@@ -2130,7 +2142,8 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
             
             if response.status_code == 200:
                 analysis_result = response.json()["choices"][0]["message"]["content"]
-                st.success("✅ Анализ выполнен через OpenRouter API!")
+                status_text.text("✅ Анализ завершен!")
+                progress_bar.progress(80)
             else:
                 analysis_result = f"Ошибка API: {response.status_code} - {response.text}"
                 st.error("⚠️ Ошибка при обращении к API")
@@ -2140,6 +2153,9 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
             st.error(f"❌ Ошибка: {e}")
         
         # Создаем структурированные данные для отчета
+        status_text.text("📋 Генерация отчета...")
+        progress_bar.progress(90)
+        
         report_data = {
             "company": company_name,
             "report_title": report_title,
@@ -2158,6 +2174,10 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
         
         # Сохраняем отчет в session_state для скачивания
         st.session_state['html_report'] = html_report
+        
+        # Завершаем прогресс
+        status_text.text("🎉 Готово!")
+        progress_bar.progress(100)
         
         st.success("🎉 Анализ успешно завершен!")
         
@@ -2191,56 +2211,78 @@ if st.button("🚀 Генерация отчета", type="primary", disabled=no
             include_appendix = st.checkbox("📎 Приложение", value=True)
         
         # Генерируем отчет с выбранными блоками
-        if st.button("📄 Сгенерировать отчет", type="primary", use_container_width=True):
-            # Собираем выбранные разделы
-            selected_sections = {
-                'overview': include_overview,
-                'brief': include_brief,
-                'brief_answers': include_brief_answers,
-                'analysis': include_analysis,
-                'personas': include_personas,
-                'insights': include_insights,
-                'pain_points': include_pain_points,
-                'user_needs': include_user_needs,
-                'behavioral': include_behavioral,
-                'emotional': include_emotional,
-                'contradictions': include_contradictions,
-                'quotes': include_quotes,
-                'recommendations': include_recommendations,
-                'appendix': include_appendix
-            }
-            
-            # Генерируем кастомный отчет
-            custom_html_report = generate_custom_html_report(st.session_state['report_data'], selected_sections)
-            
-            # Сохраняем в session_state
-            st.session_state['custom_html_report'] = custom_html_report
-            st.session_state['selected_sections'] = selected_sections
-            
-            st.success("✅ Отчет сгенерирован! Используйте кнопку скачивания ниже.")
+        col_gen_1, col_gen_2, col_gen_3 = st.columns([1, 2, 1])
         
-        # Кнопка для скачивания HTML
-        if 'custom_html_report' in st.session_state and st.session_state['custom_html_report']:
-            try:
-                html_data = st.session_state['custom_html_report']
-                if isinstance(html_data, str):
-                    # Показываем информацию о выбранных разделах
-                    selected_count = sum(1 for v in st.session_state.get('selected_sections', {}).values() if v)
-                    st.info(f"📊 Отчет содержит {selected_count} разделов из 14 доступных")
+        with col_gen_2:
+            if st.button("📄 Сгенерировать кастомный отчет", type="primary", use_container_width=True):
+                with st.spinner("🔄 Генерация отчета..."):
+                    # Собираем выбранные разделы
+                    selected_sections = {
+                        'overview': include_overview,
+                        'brief': include_brief,
+                        'brief_answers': include_brief_answers,
+                        'analysis': include_analysis,
+                        'personas': include_personas,
+                        'insights': include_insights,
+                        'pain_points': include_pain_points,
+                        'user_needs': include_user_needs,
+                        'behavioral': include_behavioral,
+                        'emotional': include_emotional,
+                        'contradictions': include_contradictions,
+                        'quotes': include_quotes,
+                        'recommendations': include_recommendations,
+                        'appendix': include_appendix
+                    }
                     
-                    st.download_button(
-                        label="📥 Скачать HTML отчет",
-                        data=html_data.encode('utf-8'),
-                        file_name=f"ux_report_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
-                        mime="text/html",
-                        use_container_width=True
-                    )
-                else:
-                    st.error("Ошибка: HTML отчет имеет неверный формат")
-            except Exception as e:
-                st.error(f"Ошибка при создании кнопки скачивания: {str(e)}")
-        else:
-            st.warning("Сначала сгенерируйте отчет, выбрав нужные разделы")
+                    # Генерируем кастомный отчет
+                    custom_html_report = generate_custom_html_report(st.session_state['report_data'], selected_sections)
+                    
+                    # Сохраняем в session_state
+                    st.session_state['custom_html_report'] = custom_html_report
+                    st.session_state['selected_sections'] = selected_sections
+                    
+                    st.success("✅ Отчет сгенерирован! Используйте кнопку скачивания ниже.")
+                    st.rerun()
+        
+        # Кнопки для скачивания HTML
+        col_download_1, col_download_2 = st.columns(2)
+        
+        with col_download_1:
+            # Полный отчет
+            if 'html_report' in st.session_state and st.session_state['html_report']:
+                st.download_button(
+                    label="📥 Скачать полный отчет",
+                    data=st.session_state['html_report'].encode('utf-8'),
+                    file_name=f"ux_report_full_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
+                    mime="text/html",
+                    use_container_width=True
+                )
+            else:
+                st.button("📥 Скачать полный отчет", disabled=True, use_container_width=True)
+        
+        with col_download_2:
+            # Кастомный отчет
+            if 'custom_html_report' in st.session_state and st.session_state['custom_html_report']:
+                try:
+                    html_data = st.session_state['custom_html_report']
+                    if isinstance(html_data, str):
+                        # Показываем информацию о выбранных разделах
+                        selected_count = sum(1 for v in st.session_state.get('selected_sections', {}).values() if v)
+                        st.info(f"📊 Кастомный отчет: {selected_count} разделов")
+                        
+                        st.download_button(
+                            label="📥 Скачать кастомный отчет",
+                            data=html_data.encode('utf-8'),
+                            file_name=f"ux_report_custom_{company_name}_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
+                            mime="text/html",
+                            use_container_width=True
+                        )
+                    else:
+                        st.error("Ошибка: HTML отчет имеет неверный формат")
+                except Exception as e:
+                    st.error(f"Ошибка при создании кнопки скачивания: {str(e)}")
+            else:
+                st.button("📥 Скачать кастомный отчет", disabled=True, use_container_width=True)
         
         # Информация о следующих шагах
         st.markdown("""

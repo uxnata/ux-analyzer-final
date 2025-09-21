@@ -8,12 +8,18 @@ import sys
 import os
 
 # Добавляем текущую директорию в путь для импорта модулей
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, current_dir)
 
 # Импорты наших классов
-from ux_analyzer_classes import CompanyConfig, BriefManager
-from ux_analyzer_core import AdvancedUXAnalyzer
-from ux_report_generator import EnhancedReportGenerator
+try:
+    from ux_analyzer_classes import CompanyConfig, BriefManager
+    from ux_analyzer_core import AdvancedUXAnalyzer
+    from ux_report_generator import EnhancedReportGenerator
+except ImportError as e:
+    st.error(f"❌ Ошибка импорта модулей: {e}")
+    st.error("Попробуйте перезагрузить страницу")
+    st.stop()
 
 def read_docx(file):
     """Читает содержимое .docx файла"""

@@ -297,36 +297,49 @@ class AdvancedUXAnalyzer:
 
     def _cross_analyze_interviews(self, summaries: List[InterviewSummary]) -> Dict:
         """Кросс-анализ интервью"""
-        # Собираем все проблемы
-        all_pains = []
-        for summary in summaries:
-            for pain in summary.pain_points:
-                if isinstance(pain, dict):
-                    all_pains.append({
-                        'pain': pain.get('pain', ''),
-                        'severity': pain.get('severity', 0),
-                        'interview_id': summary.interview_id,
-                        'quotes': pain.get('quotes', [])
-                    })
+        try:
+            # Собираем все проблемы
+            all_pains = []
+            for summary in summaries:
+                if hasattr(summary, 'pain_points') and summary.pain_points:
+                    for pain in summary.pain_points:
+                        if isinstance(pain, dict):
+                            all_pains.append({
+                                'pain': pain.get('pain', ''),
+                                'severity': pain.get('severity', 0),
+                                'interview_id': getattr(summary, 'interview_id', 0),
+                                'quotes': pain.get('quotes', [])
+                            })
+        except Exception as e:
+            print(f"Ошибка при сборе проблем: {e}")
+            all_pains = []
 
-        # Группируем похожие проблемы
-        from collections import defaultdict
-        pain_groups = defaultdict(list)
-        for pain in all_pains:
-            pain_text = pain['pain'].lower()
-            # Простая группировка по ключевым словам
-            for key in ['интерфейс', 'навигация', 'скорость', 'ошибка', 'сложно', 'непонятно']:
-                if key in pain_text:
-                    pain_groups[key].append(pain)
-                    break
-            else:
-                pain_groups['другое'].append(pain)
+        try:
+            # Группируем похожие проблемы
+            from collections import defaultdict
+            pain_groups = defaultdict(list)
+            for pain in all_pains:
+                pain_text = pain.get('pain', '').lower() if pain.get('pain') else ''
+                # Простая группировка по ключевым словам
+                for key in ['интерфейс', 'навигация', 'скорость', 'ошибка', 'сложно', 'непонятно']:
+                    if key in pain_text:
+                        pain_groups[key].append(pain)
+                        break
+                else:
+                    pain_groups['другое'].append(pain)
 
-        return {
-            'pain_groups': dict(pain_groups),
-            'total_pains': len(all_pains),
-            'unique_pains': len(pain_groups)
-        }
+            return {
+                'pain_groups': dict(pain_groups),
+                'total_pains': len(all_pains),
+                'unique_pains': len(pain_groups)
+            }
+        except Exception as e:
+            print(f"Ошибка при группировке проблем: {e}")
+            return {
+                'pain_groups': {},
+                'total_pains': 0,
+                'unique_pains': 0
+            }
 
     def _identify_behavioral_patterns(self, summaries: List[InterviewSummary], cross_analysis: Dict) -> List[Dict]:
         """Выявление поведенческих паттернов"""

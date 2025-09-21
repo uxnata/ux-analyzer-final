@@ -55,7 +55,7 @@ with col1:
     api_key = st.text_input(
         "OpenRouter API Key",
         type="password",
-        placeholder="Введите ваш OpenRouter API ключ",
+        value="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",
         help="API ключ для OpenRouter"
     )
     
@@ -183,7 +183,7 @@ if st.button("🚀 Начать анализ", type="primary", disabled=not uplo
                         "Content-Type": "application/json"
                     },
                     json={
-                        "model": "meta-llama/llama-3.1-8b-instruct:free",
+                        "model": "anthropic/claude-3.5-sonnet",
                         "messages": [
                             {"role": "user", "content": brief_prompt}
                         ],
